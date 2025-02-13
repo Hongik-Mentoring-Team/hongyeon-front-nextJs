@@ -124,6 +124,7 @@ const MentorPage: React.FC<MentorPageProps> = ({ initialTags }) => {
               작성하기
             </button>
           </div>
+
           {/* 게시글 목록 */}
           <div
             id="MentorTextBoxContainer"
@@ -133,6 +134,7 @@ const MentorPage: React.FC<MentorPageProps> = ({ initialTags }) => {
               posts.map((post) => (
                 <MentorTextBox
                   key={post.postId}
+                  postId={post.postId} // ✅ postId 추가
                   title={post.title}
                   mainText={post.content}
                   memberID={post.author}
@@ -167,24 +169,32 @@ const MentorTextTag: React.FC<{
   </button>
 );
 
-// ✅ 게시글 블록 컴포넌트
+// ✅ 게시글 블록 컴포넌트 (✅ 게시글 클릭 시 상세 페이지 이동)
 const MentorTextBox: React.FC<{
+  postId: number; // ✅ postId 추가
   title: string;
   mainText: string;
   memberID: string;
   date: string;
-}> = ({ title, mainText, memberID, date }) => (
-  <div className="flex flex-col justify-between min-w-[750px] h-[150px] border-2 rounded-lg bg-gray-50 p-4">
-    <h2 className="w-auto text-gray-800 text-2xl font-bold">{title}</h2>
-    <span className="w-auto text-gray-700">{mainText}</span>
-    <div className="flex w-full justify-between items-center text-gray-500 text-sm">
-      <div className="flex items-center gap-2">
-        <CircleUserRound size={20} />
-        <span>{memberID}</span>
+}> = ({ postId, title, mainText, memberID, date }) => {
+  const router = useRouter();
+
+  return (
+    <div
+      onClick={() => router.push(`/Community/mentor/${postId}`)} // ✅ 클릭 시 이동
+      className="flex flex-col justify-between min-w-[750px] h-[150px] border-2 rounded-lg bg-gray-50 p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+    >
+      <h2 className="w-auto text-gray-800 text-2xl font-bold">{title}</h2>
+      <span className="w-auto text-gray-700">{mainText}</span>
+      <div className="flex w-full justify-between items-center text-gray-500 text-sm">
+        <div className="flex items-center gap-2">
+          <CircleUserRound size={20} />
+          <span>{memberID}</span>
+        </div>
+        <span>{date}</span>
       </div>
-      <span>{date}</span>
     </div>
-  </div>
-);
+  );
+};
 
 export default MentorPage;

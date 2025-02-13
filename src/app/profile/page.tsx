@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { CircleUserRound } from "lucide-react";
 import fetchProfile from "@/lib/server/fetchProfile"; // ✅ 프로필 데이터를 가져오는 함수
+import { useRouter } from "next/navigation";
 
 interface Post {
   postId: number;
@@ -42,6 +43,7 @@ interface ProfileData {
 
 export default function Profile() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -129,7 +131,8 @@ export default function Profile() {
             mentorPosts.map((post) => (
               <div
                 key={post.postId}
-                className="p-3 bg-white rounded-lg shadow mb-2"
+                className="p-3 bg-white rounded-lg shadow mb-2 cursor-pointer hover:bg-gray-100"
+                onClick={() => router.push(`/Community/mentor/${post.postId}`)} // ✅ 멘토 게시글 클릭 시 이동
               >
                 <h3 className="text-md font-semibold">{post.title}</h3>
                 <p className="text-sm text-gray-600">{post.content}</p>
@@ -148,7 +151,8 @@ export default function Profile() {
             menteePosts.map((post) => (
               <div
                 key={post.postId}
-                className="p-3 bg-white rounded-lg shadow mb-2"
+                className="p-3 bg-white rounded-lg shadow mb-2 cursor-pointer hover:bg-gray-100"
+                onClick={() => router.push(`/Community/mentee/${post.postId}`)} // ✅ 멘티 게시글 클릭 시 이동
               >
                 <h3 className="text-md font-semibold">{post.title}</h3>
                 <p className="text-sm text-gray-600">{post.content}</p>

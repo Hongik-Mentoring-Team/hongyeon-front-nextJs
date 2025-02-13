@@ -8,13 +8,21 @@ interface Tag {
   name: string;
 }
 
+interface CommentResDto {
+  commentId: number;
+  comment: string;
+  postId: number;
+  memberId: number;
+  createdAt: string;
+}
+
 interface Post {
   postId: number;
   title: string;
   author: string;
   tag: string;
   views: number;
-  comments: number;
+  comments: CommentResDto[];
   createdAt: string;
 }
 
@@ -128,7 +136,7 @@ const BoardPage: React.FC<BoardPageProps> = ({ initialTags }) => {
                         {post.title}
                       </span>
                       <span className="text-xs text-gray-500">
-                        댓글 {post.comments}
+                        댓글 {post.comments.length}
                       </span>
                     </div>
                   </td>

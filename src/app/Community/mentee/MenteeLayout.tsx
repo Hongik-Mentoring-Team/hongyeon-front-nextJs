@@ -102,6 +102,7 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
               posts.map((post) => (
                 <MenteeTextBox
                   key={post.postId}
+                  postId={post.postId}
                   title={post.title}
                   mainText={post.content}
                   memberID={post.author}
@@ -138,22 +139,30 @@ const MenteeTextTag: React.FC<{
 
 // ✅ 게시글 블록 컴포넌트
 const MenteeTextBox: React.FC<{
+  postId: number;
   title: string;
   mainText: string;
   memberID: string;
   date: string;
-}> = ({ title, mainText, memberID, date }) => (
-  <div className="flex flex-col justify-between min-w-[650px] h-[120px] border-2 rounded-lg bg-gray-50 p-3">
-    <h2 className="w-auto text-gray-800 text-xl font-bold">{title}</h2>
-    <span className="w-auto text-gray-700 text-sm">{mainText}</span>
-    <div className="flex w-full justify-between items-center text-gray-500 text-xs">
-      <div className="flex items-center gap-2">
-        <CircleUserRound size={18} />
-        <span>{memberID}</span>
+}> = ({ postId, title, mainText, memberID, date }) => {
+  const router = useRouter();
+
+  return (
+    <div
+      onClick={() => router.push(`/Community/mentee/${postId}`)} // ✅ 클릭 시 이동
+      className="flex flex-col justify-between min-w-[750px] h-[150px] border-2 rounded-lg bg-gray-50 p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+    >
+      <h2 className="w-auto text-gray-800 text-2xl font-bold">{title}</h2>
+      <span className="w-auto text-gray-700">{mainText}</span>
+      <div className="flex w-full justify-between items-center text-gray-500 text-sm">
+        <div className="flex items-center gap-2">
+          <CircleUserRound size={20} />
+          <span>{memberID}</span>
+        </div>
+        <span>{date}</span>
       </div>
-      <span>{date}</span>
     </div>
-  </div>
-);
+  );
+};
 
 export default MenteeLayout;
