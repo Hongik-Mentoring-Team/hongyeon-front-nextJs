@@ -6,7 +6,7 @@ interface Tag {
 }
 
 interface Post {
-  id: number;
+  postId: number;
   title: string;
   content: string;
   author: string;
@@ -88,7 +88,7 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
             {posts.length > 0 ? (
               posts.map((post) => (
                 <MenteeTextBox
-                  key={post.title}
+                  key={post.id}
                   title={post.title}
                   mainText={post.content}
                   memberID={post.author}
@@ -130,12 +130,12 @@ const MenteeTextBox: React.FC<{
   memberID: string;
   date: string;
 }> = ({ title, mainText, memberID, date }) => (
-  <div className="flex flex-col justify-between min-w-[750px] h-[150px] border-2 rounded-lg bg-gray-50 p-4">
-    <h2 className="w-auto text-gray-800 text-2xl font-bold">{title}</h2>
-    <span className="w-auto text-gray-700">{mainText}</span>
-    <div className="flex w-full justify-between items-center text-gray-500 text-sm">
+  <div className="flex flex-col justify-between min-w-[650px] h-[120px] border-2 rounded-lg bg-gray-50 p-3">
+    <h2 className="w-auto text-gray-800 text-xl font-bold">{title}</h2>
+    <span className="w-auto text-gray-700 text-sm">{mainText}</span>
+    <div className="flex w-full justify-between items-center text-gray-500 text-xs">
       <div className="flex items-center gap-2">
-        <CircleUserRound size={20} />
+        <CircleUserRound size={18} />
         <span>{memberID}</span>
       </div>
       <span>{date}</span>

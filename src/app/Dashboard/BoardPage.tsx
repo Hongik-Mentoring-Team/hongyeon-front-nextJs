@@ -9,7 +9,7 @@ interface Tag {
 }
 
 interface Post {
-  id: number;
+  postId: number;
   title: string;
   author: string;
   tag: string;
@@ -118,7 +118,10 @@ const BoardPage: React.FC<BoardPageProps> = ({ initialTags }) => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {posts.map((post) => (
-                <tr key={post.id} className="hover:bg-gray-50 cursor-pointer">
+                <tr
+                  key={post.postId}
+                  className="hover:bg-gray-50 cursor-pointer"
+                >
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-gray-900">

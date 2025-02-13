@@ -1,3 +1,4 @@
+//layout이 가지고 있는 실질적인 layout => 즉, 모든 페이지에 적용
 "use client"; // 변경사항: 클라이언트 컴포넌트 선언
 
 import { ReactNode } from "react";

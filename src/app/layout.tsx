@@ -1,3 +1,4 @@
+//모든 페이지를 감싼다
 import type { Metadata } from "next";
 import { Noto_Sans_KR } from "next/font/google";
 import "./global.css";

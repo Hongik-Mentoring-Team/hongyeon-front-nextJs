@@ -10,7 +10,7 @@ interface Tag {
 }
 
 interface Post {
-  id: number;
+  postId: number;
   title: string;
   content: string;
   author: string;
@@ -41,7 +41,7 @@ const MenteePage: React.FC<MenteePageProps> = ({ initialTags }) => {
     );
   };
 
-  // ✅ 선택된 태그 ID 리스트를 백엔드에 보내서 게시글 필터링
+  // ✅ 카테고리/태그 별 게시글 조회
   useEffect(() => {
     const fetchPosts = async () => {
       const tagQuery =

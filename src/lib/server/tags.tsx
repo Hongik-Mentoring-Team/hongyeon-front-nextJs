@@ -3,7 +3,8 @@ export const getTags = async () => {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/tags`,
       {
-        cache: "force-cache", // 정적 데이터로 캐싱
+        // cache: "force-cache", // 정적 데이터로 캐싱
+        next: { revalidate: 60 },
       }
     );
 

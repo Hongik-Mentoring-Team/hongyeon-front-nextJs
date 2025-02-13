@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Bell, Settings } from "lucide-react";
+import { Bell, CircleUserRound, Settings } from "lucide-react";
 import Link from "next/link";
 
 const Navbar = () => {
@@ -74,6 +74,10 @@ const Navbar = () => {
         {/* ✅ 로그인 상태 확인 후 버튼 표시 */}
         {user ? (
           <div className="flex items-center gap-4">
+            {/* 작은 사람 아이콘 → 클릭 시 /profile 이동 */}
+            <Link href="/profile">
+              <CircleUserRound className="w-6 h-6 text-gray-500 cursor-pointer hover:text-gray-700" />
+            </Link>
             <span className="text-gray-700">{user} 님,</span>
             <button
               type="button"

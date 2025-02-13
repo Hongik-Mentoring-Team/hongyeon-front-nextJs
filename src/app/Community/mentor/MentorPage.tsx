@@ -9,7 +9,7 @@ interface Tag {
 }
 
 interface Post {
-  id: number;
+  postId: number;
   title: string;
   content: string;
   author: string;
@@ -120,7 +120,7 @@ const MentorPage: React.FC<MentorPageProps> = ({ initialTags }) => {
             {posts.length > 0 ? (
               posts.map((post) => (
                 <MentorTextBox
-                  key={post.id}
+                  key={post.postId}
                   title={post.title}
                   mainText={post.content}
                   memberID={post.author}
