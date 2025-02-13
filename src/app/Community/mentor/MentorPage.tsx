@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { CircleUserRound, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Tag {
   id: number;
@@ -22,6 +23,8 @@ interface MentorPageProps {
 }
 
 const MentorPage: React.FC<MentorPageProps> = ({ initialTags }) => {
+  const router = useRouter();
+
   // ✅ "개발전체" 태그가 있으면 기본 선택
   const defaultTag = initialTags.find((tag) => tag.name === "개발전체");
   const [selectedTags, setSelectedTags] = useState<number[]>(
@@ -100,18 +103,27 @@ const MentorPage: React.FC<MentorPageProps> = ({ initialTags }) => {
             </div>
           </div>
 
-          {/* 검색창 */}
-          <div className="relative w-full sm:w-64 mb-6">
-            <input
-              type="text"
-              placeholder="검색어를 입력하세요"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-          </div>
+          {/* 검색창 & 작성하기 버튼 */}
+          <div className="flex w-full items-center justify-between mb-6">
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="검색어를 입력하세요"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            </div>
 
+            {/* ✅ 작성하기 버튼 (검색창과 같은 높이, 오른쪽 정렬) */}
+            <button
+              onClick={() => router.push("/Community/mentor/writePost")}
+              className="ml-4 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg transition-colors"
+            >
+              작성하기
+            </button>
+          </div>
           {/* 게시글 목록 */}
           <div
             id="MentorTextBoxContainer"
