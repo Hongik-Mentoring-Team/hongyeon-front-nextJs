@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface CommentResDto {
   commentId: number;
@@ -9,6 +10,9 @@ interface CommentResDto {
   postId: number;
   memberId: number;
   createdAt: string;
+  owner: boolean;
+  editing?: boolean;
+  editedText?: string;
 }
 
 interface Post {
@@ -23,10 +27,14 @@ interface Post {
   capacity: number; // ✅ 모집 인원
   chatRoomType: "PUBLIC" | "PRIVATE"; // ✅ 채팅방 유형
   currentApplicants: number; // ✅ 현재 지원 인원
-  isClosed: boolean; // ✅ 모집 마감 여부
+  closed: boolean; // ✅ 모집 마감 여부
+  owner: boolean;
+  chatRoomId: number;
 }
 
 const MentorPostDetail = () => {
+  const router = useRouter();
+
   const { postId } = useParams(); // 경로변수 가져오기
   const [post, setPost] = useState<Post | null>(null);
   const [newComment, setNewComment] = useState(""); // ✅ 댓글 입력 상태
@@ -118,17 +126,185 @@ const MentorPostDetail = () => {
     }
   };
 
+  // ✅ 댓글 수정 상태 변경
+  const handleEditComment = (commentId: number) => {
+    setPost((prev) => ({
+      ...prev!,
+      comments: prev!.comments.map((comment) =>
+        comment.commentId === commentId
+          ? { ...comment, editing: true, editedText: comment.comment }
+          : comment
+      ),
+    }));
+  };
+
+  // ✅ 수정 중 취소
+  const handleCancelEdit = (commentId: number) => {
+    setPost((prev) => ({
+      ...prev!,
+      comments: prev!.comments.map((comment) =>
+        comment.commentId === commentId
+          ? { ...comment, editing: false }
+          : comment
+      ),
+    }));
+  };
+
+  // ✅ 수정 중 내용 변경
+  const handleCommentChange = (commentId: number, newText: string) => {
+    setPost((prev) => ({
+      ...prev!,
+      comments: prev!.comments.map((comment) =>
+        comment.commentId === commentId
+          ? { ...comment, editedText: newText }
+          : comment
+      ),
+    }));
+  };
+
+  // ✅ 댓글 저장 (백엔드 PATCH 요청)
+  const handleSaveComment = async (commentId: number) => {
+    const updatedComment = post!.comments.find(
+      (c) => c.commentId === commentId
+    );
+    if (!updatedComment) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/${postId}/comments/${commentId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            comment: updatedComment.editedText,
+            postId: updatedComment.postId,
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error("댓글 수정 실패");
+
+      setPost((prev) => ({
+        ...prev!,
+        comments: prev!.comments.map((comment) =>
+          comment.commentId === commentId
+            ? { ...comment, comment: updatedComment.editedText, editing: false }
+            : comment
+        ),
+      }));
+    } catch (error) {
+      console.error("댓글 수정 오류:", error);
+      alert("댓글 수정 중 오류가 발생했습니다.");
+    }
+  };
+
+  // ✅ 댓글 삭제 핸들러 (백엔드 DELETE 요청)
+  const handleDeleteComment = async (commentId: number) => {
+    const confirmDelete = confirm("정말로 댓글을 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/${postId}/comments/${commentId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "댓글 삭제 실패");
+      }
+
+      // ✅ 삭제된 댓글을 화면에서 제거
+      setPost((prev) => ({
+        ...prev!,
+        comments: prev!.comments.filter(
+          (comment) => comment.commentId !== commentId
+        ),
+      }));
+
+      alert("댓글이 삭제되었습니다.");
+    } catch (error: any) {
+      console.error("댓글 삭제 오류:", error);
+      alert(`댓글 삭제 실패: ${error.message}`);
+    }
+  };
+
+  {
+    /* ✅ 게시글 삭제 핸들러 */
+  }
+  const handleDelete = async () => {
+    if (!postId) return;
+
+    const confirmDelete = confirm("정말로 게시글을 삭제하시겠습니까?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/${postId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "게시글 삭제 실패");
+      }
+
+      alert("게시글이 삭제되었습니다.");
+      router.push("/Community/mentor"); // ✅ 삭제 후 게시판으로 이동
+    } catch (error: any) {
+      console.error("게시글 삭제 오류:", error);
+      alert(`삭제 실패: ${error.message}`);
+    }
+  };
+
+  {
+    /* 채팅방 개설 핸들러 */
+  }
+  const handleEnterChat = () => {
+    if (chatRoomId) {
+      router.push(`/chat/${chatRoomId}`);
+    }
+  };
+
   if (!post)
     return <p className="text-center mt-10"> 게시글을 불러오는 중...</p>;
 
   return (
     <div className="max-w-3xl mx-auto my-10 p-6 bg-white rounded-lg shadow-md">
-      {/* ✅ 제목 및 메타정보 */}
       <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-      <p className="text-gray-600 text-sm mb-2">
-        작성자: {post.author} | {post.createdAt}
-      </p>
+      {/* ✅ 제목 및 메타정보 (수정/삭제 버튼 포함) */}
+      <div className="flex justify-between items-center mb-4">
+        <p className="text-gray-600 text-sm">
+          작성자: {post.author} | {post.createdAt}
+        </p>
 
+        {/* ✅ 게시글 소유자인 경우 수정/삭제 버튼 표시 */}
+        {post.owner && (
+          <div className="flex gap-2">
+            <button
+              className="bg-transparent text-gray-500 text-sm hover:text-gray-700 transition-colors"
+              onClick={() =>
+                router.push(`/Community/mentor/editPost/${post.postId}`)
+              }
+            >
+              수정
+            </button>
+            <button
+              className="bg-transparent text-gray-500 text-sm hover:text-gray-700 transition-colors"
+              onClick={handleDelete}
+            >
+              삭제
+            </button>
+          </div>
+        )}
+      </div>
       {/* ✅ 좋아요 수 표시 */}
       <div className="flex items-center gap-4 text-gray-600 text-sm mb-4">
         <p>👍 좋아요 {post.likeCount}</p>
@@ -156,26 +332,46 @@ const MentorPostDetail = () => {
         </p>
         <p
           className={`font-bold ${
-            post.isClosed ? "text-red-600" : "text-green-600"
+            post.closed ? "text-red-600" : "text-green-600"
           }`}
         >
-          {post.isClosed ? "❌ 모집 마감" : "✅ 모집 중"}
+          {post.closed ? "❌ 모집 마감" : "✅ 모집 중"}
         </p>
       </div>
 
       {/* ✅ 지원하기 버튼 */}
-      <div className="mt-6 flex justify-center">
-        <button
-          onClick={handleApply}
-          disabled={post.isClosed}
-          className={`w-full py-3 rounded-md font-medium transition-colors ${
-            post.isClosed
-              ? "bg-red-500 text-white cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700 text-white"
-          }`}
-        >
-          {post.isClosed ? "모집이 마감되었습니다" : "지원하기"}
-        </button>
+      <div className="mt-6 flex flex-col items-center">
+        {/* ✅ 게시글 작성자인 경우 현재 지원자 수 표시 */}
+        {post.owner ? (
+          <p className="text-gray-600 text-sm mb-2">
+            현재 지원자 수:{" "}
+            <span className="font-bold">{post.currentApplicants}</span> 명
+          </p>
+        ) : (
+          <button
+            onClick={handleApply}
+            disabled={post.closed}
+            className={`w-full py-3 rounded-md font-medium transition-colors ${
+              post.closed
+                ? "bg-red-500 text-white cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
+          >
+            {post.closed ? "모집이 마감되었습니다" : "지원하기"}
+          </button>
+        )}
+      </div>
+
+      <div className="mt-6 flex flex-col items-center">
+        {/* ✅ 모집이 마감되었을 때 채팅방 버튼 표시 */}
+        {post.closed && chatRoomId && (
+          <button
+            onClick={handleEnterChat}
+            className="mt-4 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            멘토링 채팅방이 개설되었습니다
+          </button>
+        )}
       </div>
 
       {/* ✅ 댓글 리스트 */}
@@ -187,10 +383,59 @@ const MentorPostDetail = () => {
               key={comment.commentId}
               className="p-3 bg-white rounded-lg shadow mb-2"
             >
-              <p className="text-sm text-gray-800">{comment.comment}</p>
-              <span className="text-xs text-gray-500">
-                작성일: {comment.createdAt}
-              </span>
+              <div className="flex justify-between items-center">
+                {/* ✅ 수정 중이면 입력 필드 표시 */}
+                {comment.editing ? (
+                  <input
+                    type="text"
+                    value={comment.editedText}
+                    onChange={(e) =>
+                      handleCommentChange(comment.commentId, e.target.value)
+                    }
+                    className="flex-1 p-1 border border-gray-300 rounded-md text-sm"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-800">{comment.comment}</p>
+                )}
+
+                {/* ✅ 댓글 작성자인 경우에만 수정/삭제 버튼 표시 */}
+                {comment.owner && (
+                  <div className="flex gap-2">
+                    {comment.editing ? (
+                      <>
+                        <button
+                          className="bg-transparent text-blue-500 text-xs hover:text-blue-700 transition-colors"
+                          onClick={() => handleSaveComment(comment.commentId)}
+                        >
+                          저장
+                        </button>
+                        <button
+                          className="bg-transparent text-gray-500 text-xs hover:text-gray-700 transition-colors"
+                          onClick={() => handleCancelEdit(comment.commentId)}
+                        >
+                          취소
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="bg-transparent text-gray-500 text-xs hover:text-gray-700 transition-colors"
+                          onClick={() => handleEditComment(comment.commentId)}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="bg-transparent text-gray-500 text-xs hover:text-gray-700 transition-colors"
+                          onClick={() => handleDeleteComment(comment.commentId)}
+                        >
+                          삭제
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              <span className="text-xs text-gray-500">{comment.createdAt}</span>
             </div>
           ))
         ) : (
