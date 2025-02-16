@@ -1,4 +1,7 @@
+"use client";
+
 import { CircleUserRound } from "lucide-react";
+import fetchProfile from "./fetchProfile";
 
 export default function Profile() {
   return (
@@ -6,7 +9,9 @@ export default function Profile() {
       <div className="flex w-full h-auto justify-between items-end gap-6">
         {/* 프로필 사진 */}
         <div className="flex w-1/2 h-auto justify-center">
-          <CircleUserRound size={250} />
+          <button onClick={fetchProfile}>
+            <CircleUserRound size={250} />
+          </button>
         </div>
 
         {/* 배지 내역 */}
