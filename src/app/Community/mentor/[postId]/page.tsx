@@ -29,7 +29,7 @@ interface Post {
   currentApplicants: number; // ✅ 현재 지원 인원
   closed: boolean; // ✅ 모집 마감 여부
   owner: boolean;
-  chatRoomId: number;
+  chatRoomId: number; // 초기값이 -1이면 채팅방은 미개설 상태
 }
 
 const MentorPostDetail = () => {
@@ -38,6 +38,8 @@ const MentorPostDetail = () => {
   const { postId } = useParams(); // 경로변수 가져오기
   const [post, setPost] = useState<Post | null>(null);
   const [newComment, setNewComment] = useState(""); // ✅ 댓글 입력 상태
+  const [isInitiating, setIsInitiating] = useState(false); //채팅방 생성중
+  const [nickname, setNickname] = useState(""); //사용자 닉네임
 
   // ✅ 게시글 API 호출
   useEffect(() => {
@@ -65,9 +67,13 @@ const MentorPostDetail = () => {
 
   // ✅ "지원하기" 버튼 핸들러
   const handleApply = async () => {
+    if (!nickname.trim()) {
+      alert("채팅방에서 사용할 닉네임을 입력해주세요");
+      return;
+    }
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/${postId}/apply`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/${postId}/apply?nickname=${nickname}`,
         {
           method: "GET",
           credentials: "include",
@@ -264,12 +270,56 @@ const MentorPostDetail = () => {
     }
   };
 
+  // ✅ 채팅방 생성 API 호출 함수
+  const handleInitiateChat = async () => {
+    if (!post) return;
+    setIsInitiating(true);
+    try {
+      // 백엔드로 보낼 DTO
+      const chatInitiateDto = {
+        roomName: post.title, // 채팅방 이름 예시
+        postId: post.postId,
+      };
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/chatRoom/initiate`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(chatInitiateDto),
+        }
+      );
+
+      if (!res.ok) throw new Error("채팅방 생성 실패");
+
+      // 채팅방 ID 수신
+      const data = await res.json();
+      const newRoomId = data.chatRoomId; // 백엔드에서 반환하는 chatRoomId
+
+      // post 상태 업데이트
+      setPost((prev) => prev && { ...prev, chatRoomId: newRoomId });
+    } catch (error) {
+      console.error("채팅방 생성 오류:", error);
+      alert("채팅방 생성 중 오류가 발생했습니다.");
+    } finally {
+      setIsInitiating(false);
+    }
+  };
+
+  // ✅ 모집이 마감되고 chatRoomId === -1인 경우 자동으로 chatRoomInit 호출
+  useEffect(() => {
+    if (post && post.closed && post.chatRoomId === -1 && !isInitiating) {
+      handleInitiateChat();
+    }
+  }, [post, isInitiating]);
+
   {
-    /* 채팅방 개설 핸들러 */
+    /* 채팅방 진입 핸들러 */
   }
   const handleEnterChat = () => {
-    if (chatRoomId) {
-      router.push(`/chat/${chatRoomId}`);
+    if (post && post.chatRoomId !== -1) {
+      router.push(`/chat/${post.chatRoomId}`);
     }
   };
 
@@ -339,32 +389,41 @@ const MentorPostDetail = () => {
         </p>
       </div>
 
-      {/* ✅ 지원하기 버튼 */}
-      <div className="mt-6 flex flex-col items-center">
-        {/* ✅ 게시글 작성자인 경우 현재 지원자 수 표시 */}
-        {post.owner ? (
-          <p className="text-gray-600 text-sm mb-2">
-            현재 지원자 수:{" "}
-            <span className="font-bold">{post.currentApplicants}</span> 명
-          </p>
-        ) : (
+      {/* ✅ 지원하기 버튼 , 닉네임 입력 */}
+      {!post.owner && (
+        <div className="mt-6 flex gap-2 items-center">
+          {/* 닉네임 입력 필드 */}
+          <input
+            type="text"
+            placeholder="닉네임을 입력하세요..."
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            className="flex-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+          />
+          {/* 지원하기 버튼 (닉네임이 입력되지 않으면 비활성화) */}
           <button
             onClick={handleApply}
-            disabled={post.closed}
-            className={`w-full py-3 rounded-md font-medium transition-colors ${
-              post.closed
-                ? "bg-red-500 text-white cursor-not-allowed"
+            disabled={post.closed || !nickname.trim()}
+            className={`px-4 py-2 rounded-md font-medium transition-colors ${
+              post.closed || !nickname.trim()
+                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >
             {post.closed ? "모집이 마감되었습니다" : "지원하기"}
           </button>
-        )}
-      </div>
+        </div>
+      )}
+      {/* 모집 마감 && chatRoomId === -1 => "채팅방을 생성하고 있습니다 :)" */}
+      {post.closed && post.chatRoomId === -1 && (
+        <p className="mt-4 text-blue-600 font-semibold">
+          채팅방을 생성하고 있습니다 :)
+        </p>
+      )}
 
       <div className="mt-6 flex flex-col items-center">
         {/* ✅ 모집이 마감되었을 때 채팅방 버튼 표시 */}
-        {post.closed && chatRoomId && (
+        {post.closed && post.chatRoomId !== -1 && (
           <button
             onClick={handleEnterChat}
             className="mt-4 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
