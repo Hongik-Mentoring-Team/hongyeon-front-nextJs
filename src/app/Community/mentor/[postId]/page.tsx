@@ -40,6 +40,7 @@ const MentorPostDetail = () => {
   const [newComment, setNewComment] = useState(""); // ✅ 댓글 입력 상태
   const [isInitiating, setIsInitiating] = useState(false); //채팅방 생성중
   const [nickname, setNickname] = useState(""); //사용자 닉네임
+  const [canJoin, setCanJoin] = useState("");
 
   // ✅ 게시글 API 호출
   useEffect(() => {
@@ -323,6 +324,30 @@ const MentorPostDetail = () => {
     }
   };
 
+  const CheckChatRoomAccess = async () => {
+    try {
+      setCanJoin("checking");
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/chatRoom/${post?.chatRoomId}/check-access`,
+        {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("채팅방 접근 권한 확인실패");
+      }
+
+      const data = await response.json();
+      setCanJoin(data.canJoin);
+    } catch (error) {
+      console.error("채팅방 접근 확인 오류", error);
+    }
+  };
+
   if (!post)
     return <p className="text-center mt-10"> 게시글을 불러오는 중...</p>;
 
@@ -422,14 +447,38 @@ const MentorPostDetail = () => {
       )}
 
       <div className="mt-6 flex flex-col items-center">
-        {/* ✅ 모집이 마감되었을 때 채팅방 버튼 표시 */}
-        {post.closed && post.chatRoomId !== -1 && (
+        {/* ✅ 버튼 클릭 전: "멘토링 채팅방이 개설되었습니다" 버튼만 표시 */}
+        {post.closed && post.chatRoomId !== -1 && canJoin === "" && (
           <button
-            onClick={handleEnterChat}
+            onClick={() => {
+              CheckChatRoomAccess(); // 버튼 클릭 후 상태 업데이트
+            }}
             className="mt-4 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             멘토링 채팅방이 개설되었습니다
           </button>
+        )}
+
+        {/* ✅ 버튼 클릭 후: 상태에 따라 다른 UI 표시 */}
+        {canJoin !== "" && (
+          <>
+            {canJoin === "true" ? (
+              <button
+                onClick={handleEnterChat}
+                className="mt-4 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                채팅방 입장하기
+              </button>
+            ) : canJoin === "false" ? (
+              <p className="mt-4 text-gray-600 font-semibold">
+                멘토링이 진행 중입니다
+              </p>
+            ) : (
+              <p className="mt-4 text-blue-600 font-semibold">
+                채팅방 접근 확인 중...
+              </p>
+            )}
+          </>
         )}
       </div>
 

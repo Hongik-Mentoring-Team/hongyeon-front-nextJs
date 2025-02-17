@@ -6,51 +6,100 @@ import SockJS from "sockjs-client";
 import { useParams } from "next/navigation";
 
 // 백엔드의 WebSocket 엔드포인트
-const WS_ENDPOINT = "http://localhost:8080/ws-stomp"; // SockJS 사용 시 변경 가능
+const WS_ENDPOINT = "http://localhost:8080/ws-stomp"; // SockJS 사용 시
 const SEND_DESTINATION = "/app/chat/message"; // 메시지 전송 경로
 
+/**
+ * ChatRoomMemberResDto: 채팅방 참여 멤버 정보
+ */
 interface ChatRoomMemberResDto {
   chatRoomMemberId: number;
   chatRoomId: number;
   nickname: string;
 }
-// , roomName, membersInfo
+
+/**
+ * ChatMessageResponseDto: 서버에서 반환하는 채팅 메시지 DTO(for http)
+ */
+interface ChatMessageResponseDto {
+  chatRoomId: number;
+  memberId: number;
+  nickname: string;
+  content: string;
+  createdAt: string; // ISO Date string
+  owner: boolean;
+}
+
+/**
+ * ChatMessageReqDto: 서버에 보내고 받는 채팅 메시지(for webSocket)
+ *
+ */
+interface ChatMessageReqDto {
+  chatRoomId: number;
+  nickname: string;
+  content: string;
+  chatRoomMemberId: number;
+}
+
+/**
+ * ChatRoomResponseDto: 서버에서 GET /api/v1/chatRoom/history/{chatRoomId} 시 반환
+ * - chatMessages: ChatMessageResponseDto[]
+ * - chatMembers: ChatRoomMemberResDto[]
+ * - name: string (채팅방 이름)
+ * - currentChatMemberId: number (내 채팅멤버 ID)
+ */
+interface ChatRoomResponseDto {
+  chatMessages: ChatMessageResponseDto[];
+  chatMembers: ChatRoomMemberResDto[];
+  name: string;
+  currentChatMemberId: number;
+}
+
 function ParticipateChatRoom() {
   const { chatRoomId } = useParams();
   const [roomName, setRoomName] = useState("");
   const [currentMembersInfo, setCurrentMembersInfo] = useState<
     ChatRoomMemberResDto[]
   >([]);
-  const [chatRoomMemberId, setChatRoomMemberId] = useState<Number>(-1);
+  const [chatRoomMemberId, setChatRoomMemberId] = useState<number>(-1); //현재 참여중인 사용자의 ChatRoomMember아이디(not MemberId)
 
-  const [messages, setMessages] = useState([]);
+  // ✅ messages를 ChatMessageResponseDto[]로 타입 지정
+  const [messages, setMessages] = useState<ChatMessageResponseDto[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const stompClientRef = useRef(null);
-  const messagesEndRef = useRef(null); // 스크롤 자동 하단 이동을 위한 ref
+
+  const stompClientRef = useRef<Client | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null); // 스크롤 자동 하단 이동을 위한 ref
 
   // ======================================================
-
+  // 1) STOMP 클라이언트 생성 및 구독
   useEffect(() => {
-    if (!chatRoomId) return;
+    if (!chatRoomId || chatRoomMemberId === -1) return; //chatRoomMemberId가 세팅된 후에 구독
 
-    // 1) STOMP 클라이언트 생성
     const stompClient = new Client({
       webSocketFactory: () =>
-        new SockJS(WS_ENDPOINT, null, {
-          withCredentials: true,
-        }),
-      reconnectDelay: 5000, // 자동 재연결 (5초)
+        new SockJS(WS_ENDPOINT, null, { withCredentials: true }),
+      reconnectDelay: 5000,
       debug: (msg) => console.log(msg),
       onConnect: () => {
         console.log("STOMP Connection 성공");
-
-        // 2) 채팅방 메시지 수신 구독
         const subscribeUrl = `/topic/chat/${chatRoomId}`;
         stompClient.subscribe(subscribeUrl, (message) => {
+          //구독 및 메시지 수신
           if (!message.body) return;
           console.log("수신된 메시지: ", message.body);
-          const msgData = JSON.parse(message.body);
-          setMessages((prev) => [...prev, msgData]);
+
+          // msgData는 ChatMessageResponseDto 형태
+          const msgData: ChatMessageReqDto = JSON.parse(message.body);
+          const receivedMessage: ChatMessageResponseDto = {
+            chatRoomId: msgData.chatRoomId,
+            nickname: msgData.nickname,
+            content: msgData.content,
+            createdAt: new Date().toISOString(),
+            owner: msgData.chatRoomMemberId === chatRoomMemberId, //현재 클라이언트가 보낸 메시지 식별
+          };
+          console.log("1:", msgData);
+          console.log("2:  ", chatRoomMemberId);
+          setMessages((prev) => [...prev, receivedMessage]);
         });
       },
       onStompError: (frame) => {
@@ -67,24 +116,28 @@ function ParticipateChatRoom() {
         console.log("STOMP 연결 해제됨");
       }
     };
-  }, [chatRoomId]);
+  }, [chatRoomId, chatRoomMemberId]);
 
-  //채팅방 입장 후 채팅방 히스토리 요청
+  // 2) 채팅방 입장 후 채팅방 히스토리 요청
   useEffect(() => {
-    fetchChatHistory();
+    if (chatRoomId) {
+      fetchChatHistory();
+    }
   }, [chatRoomId]);
 
-  // 새 메시지가 추가될 때 자동으로 스크롤을 하단으로 이동
+  // 3) 새 메시지 추가 시 자동 스크롤
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   // ===============================================================
 
-  // === 변경: 채팅방 메시지 내역 요청 함수 (GET 방식) ===
+  /**
+   * 채팅방 메시지 내역 요청
+   * /api/v1/chatRoom/history/{chatRoomId} => ChatRoomResponseDto
+   */
   const fetchChatHistory = async () => {
     try {
-      // GET 요청
       const response = await fetch(
         `http://localhost:8080/api/v1/chatRoom/history/${chatRoomId}`,
         {
@@ -96,9 +149,14 @@ function ParticipateChatRoom() {
       if (!response.ok) {
         throw new Error("채팅 내역 요청 실패!");
       }
-      const history = await response.json(); // 반환 형식: ChatRoomResponseDto
+      // ChatRoomResponseDto 형태
+      const history: ChatRoomResponseDto = await response.json();
+
+      // 메시지 배열 설정
       setMessages(history.chatMessages);
       console.log("채팅방 내역 불러오기 성공", history.chatMessages);
+
+      // 멤버 정보, 방 이름 설정
       setCurrentMembersInfo(history.chatMembers);
       setRoomName(history.name);
       setChatRoomMemberId(history.currentChatMemberId);
@@ -107,24 +165,29 @@ function ParticipateChatRoom() {
       alert("채팅방 내역을 불러오지 못했습니다.");
     }
   };
-  // =================================================
 
-  // 메시지 전송 (각 memberId별 전송은 따로 구현되어 있지 않고, 현재 사용자는 myMemberId임)
+  /**
+   * 메시지 전송
+   */
   const sendMessage = () => {
     if (!inputValue.trim()) return;
     if (!stompClientRef.current || !stompClientRef.current.connected) {
       alert("소켓 연결이 안 되어 있습니다.");
       return;
     }
+    // 내가 보낸 메시지의 닉네임
     const member = currentMembersInfo.find(
       (item) => String(item.chatRoomMemberId) === String(chatRoomMemberId)
     );
     const currentNickname = member ? member.nickname : "익명";
 
+    // 서버에 전송할 DTO
+    //여기에 위에서 정의한 인터페이스 chatmessageReqdto를 이용하고싶어
     const chatMessageDto = {
-      chatRoomId: chatRoomId,
+      chatRoomId: Number(chatRoomId),
       nickname: currentNickname,
       content: inputValue,
+      chatRoomMemberId: chatRoomMemberId,
     };
 
     stompClientRef.current.publish({
@@ -149,9 +212,9 @@ function ParticipateChatRoom() {
       <div className="mb-4">
         <p className="text-sm font-semibold">참여 멤버:</p>
         <div className="text-sm text-gray-600">
-          {currentMembersInfo.map((member: any) => (
-            <span key={member.memberId} className="mr-2">
-              {member.nickname} (ID: {member.memberId})
+          {currentMembersInfo.map((member) => (
+            <span key={member.chatRoomMemberId} className="mr-2">
+              {member.nickname} (채팅멤버ID: {member.chatRoomMemberId})
             </span>
           ))}
         </div>
@@ -159,12 +222,31 @@ function ParticipateChatRoom() {
 
       {/* 채팅 메시지 목록 */}
       <div className="border border-gray-300 h-80 overflow-y-auto p-3 rounded-md mb-4">
-        {messages.map((msg: any, idx: number) => (
-          <div key={idx} className="mb-2">
-            <strong className="text-gray-800">
-              {msg.nickname} (ID: {msg.memberId}):
-            </strong>{" "}
-            <span className="text-gray-700">{msg.content}</span>
+        {messages.map((msg, idx) => (
+          // 본인 메시지는 우측. 상대방 메시지는 좌측.
+          <div
+            key={idx}
+            className={`mb-2 flex ${
+              msg.owner ? "justify-end" : "justify-start"
+            }`}
+          >
+            {/* 실제 메시지 박스 */}
+            <div
+              className={`max-w-[70%] p-2 rounded-lg ${
+                msg.owner ? "bg-blue-100 text-right" : "bg-gray-100 text-left"
+              }`}
+            >
+              {/* 작성자 닉네임/아이디 영역 */}
+              <strong className="block text-gray-800 text-sm">
+                {msg.nickname} (memberId: {msg.memberId})
+              </strong>
+              {/* 메시지 내용 */}
+              <span className="block text-gray-700">{msg.content}</span>
+              {/* 메시지 날짜 */}
+              <span className="block text-xs text-gray-500">
+                {msg.createdAt}
+              </span>
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
