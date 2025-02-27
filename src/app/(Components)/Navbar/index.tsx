@@ -18,9 +18,10 @@ const Navbar = () => {
 
         if (!res.ok) throw new Error("사용자 세션 정보를 불러올 수 없습니다.");
         const data = await res.json();
-
         // ✅ 사용자 이름이 있으면 상태 업데이트
         setUser(data.name || null);
+        // 사용자 존재 확인
+        console.log("현재 사용자:", user);
       } catch (error) {
         console.error("세션 요청 실패:", error);
         setUser(null);

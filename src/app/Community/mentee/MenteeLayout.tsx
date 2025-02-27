@@ -34,85 +34,83 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
   const router = useRouter(); // ✅ Next.js 라우터 사용
 
   return (
-    <div className="flex w-full h-auto justify-between px-24">
-      <div id="MenteeLeftContainer" className="flex">
+    <div className="flex w-full h-auto">
+      <div
+        id="MenteeContainer"
+        className="flex flex-col w-full h-auto px-32 gap-12"
+      >
+        {/* 게시판 제목 */}
         <div
-          id="MenteeContainer"
-          className="flex flex-col w-full h-auto gap-12"
+          id="MenteeTitle"
+          className="flex flex-col w-full h-auto my-5 gap-4"
         >
-          {/* 게시판 제목 */}
-          <div
-            id="MenteeTitle"
-            className="flex flex-col w-full h-auto my-5 gap-4"
-          >
-            <h1 className="text-4xl font-bold">멘티 게시판</h1>
-            <h3 className="text-2xl font-semibold">
-              원하는 멘토에게 질문하세요.
-            </h3>
-          </div>
+          <h1 className="text-4xl font-bold">멘티 게시판</h1>
+          <h3 className="text-2xl font-semibold">
+            원하는 멘토에게 질문하세요.
+          </h3>
+        </div>
 
-          {/* 태그 필터 */}
-          <div
-            id="MenteeMenuBlock"
-            className="flex flex-col w-full h-auto my-4"
-          >
-            <h2 id="MenteeMenuTitle" className="text-2xl font-semibold">
-              태그 선택
-            </h2>
-            <div id="MenteeMenuTag" className="flex w-full h-auto py-2">
-              {tags.map((tag) => (
-                <MenteeTextTag
-                  key={tag.id}
-                  tag={tag}
-                  active={selectedTags.includes(tag.id)}
-                  onClick={() => handleTagSelection(tag.id)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* 검색창 & 작성하기 버튼 */}
-          <div className="flex w-full items-center justify-between mb-6">
-            <div className="relative w-full sm:w-64">
-              <input
-                type="text"
-                placeholder="검색어를 입력하세요"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        {/* 태그 필터 */}
+        <div
+          id="MenteeMenuBlock"
+          className="flex flex-col w-full h-auto my-4 gap-1"
+        >
+          <h2 id="MenteeMenuTitle" className="text-2xl font-semibold">
+            태그 선택
+          </h2>
+          <div id="MenteeMenuTag" className="flex w-full h-auto py-2 gap-1">
+            {tags.map((tag) => (
+              <MenteeTextTag
+                key={tag.id}
+                tag={tag}
+                active={selectedTags.includes(tag.id)}
+                onClick={() => handleTagSelection(tag.id)}
               />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
+            ))}
+          </div>
+        </div>
 
-            {/* ✅ 작성하기 버튼 (검색창과 같은 높이, 오른쪽 정렬) */}
-            <button
-              onClick={() => router.push("/Community/mentee/writePost")}
-              className="ml-4 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg transition-colors"
-            >
-              작성하기
-            </button>
+        {/* 검색창 & 작성하기 버튼 */}
+        <div className="flex w-full items-center justify-between mb-6">
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="검색어를 입력하세요"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
 
-          {/* 게시글 목록 */}
-          <div
-            id="MenteeTextBoxContainer"
-            className="flex flex-col w-full h-auto gap-2"
+          {/* ✅ 작성하기 버튼 (검색창과 같은 높이, 오른쪽 정렬) */}
+          <button
+            onClick={() => router.push("/Community/mentee/writePost")}
+            className="ml-4 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg transition-colors"
           >
-            {posts.length > 0 ? (
-              posts.map((post) => (
-                <MenteeTextBox
-                  key={post.postId}
-                  postId={post.postId}
-                  title={post.title}
-                  mainText={post.content}
-                  memberID={post.author}
-                  date={post.createdAt}
-                />
-              ))
-            ) : (
-              <p className="text-center text-gray-500">게시글이 없습니다.</p>
-            )}
-          </div>
+            작성하기
+          </button>
+        </div>
+
+        {/* 게시글 목록 */}
+        <div
+          id="MenteeTextBoxContainer"
+          className="flex flex-col w-full h-auto gap-2"
+        >
+          {posts.length > 0 ? (
+            posts.map((post) => (
+              <MenteeTextBox
+                key={post.postId}
+                postId={post.postId}
+                title={post.title}
+                mainText={post.content}
+                memberID={post.author}
+                date={post.createdAt}
+              />
+            ))
+          ) : (
+            <p className="text-center text-gray-500">게시글이 없습니다.</p>
+          )}
         </div>
       </div>
     </div>
@@ -153,7 +151,7 @@ const MenteeTextBox: React.FC<{
       className="flex flex-col justify-between min-w-[750px] h-[150px] border-2 rounded-lg bg-gray-50 p-4 cursor-pointer hover:bg-gray-100 transition-colors"
     >
       <h2 className="w-auto text-gray-800 text-2xl font-bold">{title}</h2>
-      <span className="w-auto text-gray-700">{mainText}</span>
+      <p className="w-[300px] text-gray-700 line-clamp-1">{mainText}</p>
       <div className="flex w-full justify-between items-center text-gray-500 text-sm">
         <div className="flex items-center gap-2">
           <CircleUserRound size={20} />
