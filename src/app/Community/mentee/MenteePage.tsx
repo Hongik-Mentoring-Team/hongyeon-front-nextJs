@@ -1,8 +1,8 @@
 "use client";
 
+// 멘티의 글 작성 페이지지
 import React, { useState, useEffect } from "react";
 import MenteeLayout from "./MenteeLayout"; // ✅ 레이아웃 파일 분리
-import { Search } from "lucide-react";
 
 interface Tag {
   id: number;
@@ -63,14 +63,16 @@ const MenteePage: React.FC<MenteePageProps> = ({ initialTags }) => {
   }, [selectedTags]);
 
   return (
-    <MenteeLayout
-      tags={initialTags}
-      posts={posts}
-      selectedTags={selectedTags}
-      handleTagSelection={handleTagSelection}
-      searchTerm={searchTerm}
-      setSearchTerm={setSearchTerm}
-    />
+    <div className="flex w-full h-full justify-center">
+      <MenteeLayout
+        tags={initialTags}
+        posts={posts}
+        selectedTags={selectedTags}
+        handleTagSelection={handleTagSelection}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+      />
+    </div>
   );
 };
 
