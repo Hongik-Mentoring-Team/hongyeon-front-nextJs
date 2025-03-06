@@ -1,10 +1,8 @@
 "use client"; // 변경사항: 클라이언트 컴포넌트 선언
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // 변경사항: Next.js 라우터 사용
 
 const CreateMember = () => {
-  const router = useRouter(); // 변경사항: Next.js에서 리다이렉트 처리
 
   const [name, setName] = useState<string>("");
   const [major, setMajor] = useState<string>("");

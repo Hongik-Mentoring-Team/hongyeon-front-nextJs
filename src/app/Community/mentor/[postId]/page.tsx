@@ -88,9 +88,9 @@ const MentorPostDetail = () => {
       }
 
       alert("지원이 완료되었습니다!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("지원 요청 오류:", error);
-      alert(`!${error.message}`);
+      alert(`!${error instanceof Error? error.message: "알 수 없는 오류"}`);
     }
   };
 
@@ -196,7 +196,7 @@ const MentorPostDetail = () => {
         ...prev!,
         comments: prev!.comments.map((comment) =>
           comment.commentId === commentId
-            ? { ...comment, comment: updatedComment.editedText, editing: false }
+            ? { ...comment, comment: updatedComment.editedText ?? comment.comment, editing: false }
             : comment
         ),
       }));
@@ -234,9 +234,9 @@ const MentorPostDetail = () => {
       }));
 
       alert("댓글이 삭제되었습니다.");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("댓글 삭제 오류:", error);
-      alert(`댓글 삭제 실패: ${error.message}`);
+      alert(`댓글 삭제 실패: ${error instanceof Error? error.message: "오류 타입 확인 불가"}`);
     }
   };
 
@@ -265,9 +265,9 @@ const MentorPostDetail = () => {
 
       alert("게시글이 삭제되었습니다.");
       router.push("/Community/mentor"); // ✅ 삭제 후 게시판으로 이동
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("게시글 삭제 오류:", error);
-      alert(`삭제 실패: ${error.message}`);
+      alert(`삭제 실패: ${error instanceof Error? error.message: "오류 타입 확인 불가"}`);
     }
   };
 

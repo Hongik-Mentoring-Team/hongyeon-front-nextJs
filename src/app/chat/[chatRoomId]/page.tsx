@@ -31,14 +31,15 @@ interface ChatMessageResponseDto {
 }
 
 /**
- * ChatMessageReqDto: 서버에 보내고 받는 채팅 메시지(for webSocket)
+ * ChatMessageStompResDto: 서버에서 받는 채팅 메시지(for webSocket)
  *
  */
-interface ChatMessageReqDto {
+interface ChatMessageStompResDto {
   chatRoomId: number;
   nickname: string;
   content: string;
   chatRoomMemberId: number;
+  memberId: number;
 }
 
 /**
@@ -77,7 +78,7 @@ function ParticipateChatRoom() {
 
     const stompClient = new Client({
       webSocketFactory: () =>
-        new SockJS(WS_ENDPOINT, null, { withCredentials: true }),
+        new SockJS(WS_ENDPOINT),
       reconnectDelay: 5000,
       debug: (msg) => console.log(msg),
       onConnect: () => {
@@ -88,13 +89,14 @@ function ParticipateChatRoom() {
           if (!message.body) return;
           console.log("수신된 메시지: ", message.body);
 
-          // msgData는 ChatMessageResponseDto 형태
-          const msgData: ChatMessageReqDto = JSON.parse(message.body);
+          // msgData는 ChatMessageReqeDto 형태
+          const msgData: ChatMessageStompResDto = JSON.parse(message.body);
           const receivedMessage: ChatMessageResponseDto = {
             chatRoomId: msgData.chatRoomId,
             nickname: msgData.nickname,
             content: msgData.content,
             createdAt: new Date().toISOString(),
+            memberId: msgData.memberId,
             owner: msgData.chatRoomMemberId === chatRoomMemberId, //현재 클라이언트가 보낸 메시지 식별
           };
           console.log("1:", msgData);
