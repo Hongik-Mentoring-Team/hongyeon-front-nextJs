@@ -1,3 +1,4 @@
+//일단 미사용
 "use client";
 
 import React, { useState, useEffect } from "react";
