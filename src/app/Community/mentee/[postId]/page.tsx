@@ -87,10 +87,10 @@ const MenteePostDetail = () => {
         throw new Error(errorData.message || "지원 요청 실패");
       }
       alert("지원이 완료되었습니다!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("지원 요청 오류:", error);
-      alert(`!${error.message}`);
-    }
+  
+  }
   };
 
   // ==========================================
@@ -112,6 +112,7 @@ const MenteePostDetail = () => {
         }
       );
       if (!res.ok) throw new Error("댓글 등록 실패");
+      const { data }=await res.json();      
 
       setNewComment("");
       setPost((prev) => ({
@@ -120,10 +121,10 @@ const MenteePostDetail = () => {
           ...prev!.comments,
           {
             ...commentReqDto,
-            commentId: Date.now(),
+            commentId: data.commentId,
             owner: true,
             createdAt: new Date().toISOString(),
-          },
+          }as Comment,
         ],
       }));
     } catch (error) {
@@ -185,7 +186,7 @@ const MenteePostDetail = () => {
         ...prev!,
         comments: prev!.comments.map((c) =>
           c.commentId === commentId
-            ? { ...c, comment: updatedComment.editedText, editing: false }
+            ? { ...c, comment: updatedComment.editedText ?? c.comment, editing: false }
             : c
         ),
       }));
