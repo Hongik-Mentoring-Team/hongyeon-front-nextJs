@@ -37,7 +37,7 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
     <div className="flex w-full h-auto">
       <div
         id="MenteeContainer"
-        className="flex flex-col w-full h-auto px-32 gap-12"
+        className="flex flex-col w-full h-auto px-16 lg:px-32 gap-12"
       >
         {/* 게시판 제목 */}
         <div
@@ -53,15 +53,27 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
         {/* 태그 필터 */}
         <div
           id="MenteeMenuBlock"
-          className="flex flex-col w-full h-auto my-4 gap-1"
+          className="flex flex-col w-full h-auto my-4 gap-1 overflow-hidden"
         >
           <h2 id="MenteeMenuTitle" className="text-2xl font-semibold">
             태그 선택
           </h2>
-          <div id="MenteeMenuTag" className="flex w-full h-auto py-2 gap-1">
+          <div
+            id="MenteeMenuTag"
+            className="flex animate-infiniteSlide whitespace-nowrap gap-12"
+          >
             {tags.map((tag) => (
               <MenteeTextTag
                 key={tag.id}
+                tag={tag}
+                active={selectedTags.includes(tag.id)}
+                onClick={() => handleTagSelection(tag.id)}
+              />
+            ))}
+
+            {tags.map((tag) => (
+              <MenteeTextTag
+                key={`copy-${tag.id}`}
                 tag={tag}
                 active={selectedTags.includes(tag.id)}
                 onClick={() => handleTagSelection(tag.id)}

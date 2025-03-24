@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Bell, CircleUserRound, Settings } from "lucide-react";
+import { Bell, CircleUserRound } from "lucide-react";
 import Link from "next/link";
 
 const Navbar = () => {
@@ -56,11 +56,11 @@ const Navbar = () => {
       {/* Right Side */}
       <div className="flex items-center gap-4">
         {/* Search Bar */}
-        <div className="relative flex items-center">
+        <div className="hidden relative md:flex items-center">
           <input
             type="search"
             placeholder="원하는 질문 찾아보기"
-            className="pl-10 pr-4 py-2 w-72 border-2 border-gray-500 bg-white rounded-lg focus:outline-none focus:border-blue-500"
+            className="pl-10 pr-4 py-2 w-72 border-2 border-gray-500 bg-white dark:bg-gray-800 rounded-lg focus:outline-none focus:border-blue-500"
           />
           <div className="absolute left-0 pl-3">
             <Bell className="w-6 h-6 text-gray-500" />
@@ -68,9 +68,7 @@ const Navbar = () => {
         </div>
 
         {/* Setting (추후 다크 모드 도입 예정) */}
-        <div className="flex items-center">
-          <Settings className="w-6 h-6 text-gray-500" />
-        </div>
+        <div className="flex items-center"></div>
 
         {/* ✅ 로그인 상태 확인 후 버튼 표시 */}
         {user ? (
