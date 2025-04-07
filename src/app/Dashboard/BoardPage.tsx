@@ -1,4 +1,4 @@
-export default function beforeLogin() {
+export default function BoardPage() {
   return (
     <div className="flex flex-col w-full h-full gap-5">
       {/* 설명 페이지 padding-32px 지키기! */}

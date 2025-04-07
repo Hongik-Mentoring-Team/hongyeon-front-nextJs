@@ -1,60 +1,58 @@
 "use client";
-import { useState } from "react";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+import React from "react";
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // 로그인 로직 구현
-    console.log("Login attempt:", { email, password });
+const Login = () => {
+  {
+    /* 버튼 클릭 시 백엔드 서버로 요청 전송 */
+  }
+  const handleSocialLogin = (provider: string) => {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (!backendUrl) {
+      console.error("백엔드 URL이 설정되지 않았습니다.");
+      return;
+    }
+
+    window.location.href = `${backendUrl}/oauth2/authorization/${provider}`;
   };
 
   return (
-    // 부모가 h-auto로 시작하기에 h-full을 사용한다. (h-full : 부모 컴포넌트 크기의 100%로 맞추기)
-    // login page는 가운데에 컴포넌트가 있어야 하기 때문에 h-screen을 사용한다. (h-screen : viewpoint 100%로 맞추기)
-    <div className="flex justify-center items-center w-full h-screen">
-      <form>
-        {/* Login Box  w-96 */}
-        <div className="flex flex-col justify-center items-center min-w-96 min-h-96 bg-gray-50 border-2 gap-5">
-          <h1 className="text-center text-3xl font-bold text-blue-600 mb-2">
+    <div className="min-h-screen flex justify-center items-center px-4">
+      <div className="flex-col justify-center items-center">
+        <h2 className="text-3xl font-bold text-center text-gray-700 mb-10">
+          HongikMentor
+        </h2>
+
+        <div className="w-full max-w-md p-10 rounded-lg shadow-lg bg-white">
+          {/* 로그인 제목 */}
+          <h2 className="text-3xl font-bold text-center text-gray-700 mb-6">
             로그인
-          </h1>
+          </h2>
 
-          {/* ID */}
-          <form className="flex flex-col w-full h-full gap-4">
-            <div className="flex justify-center items-center gap-5">
-              <label>ID : </label>
-              <input
-                type="id"
-                placeholder="ID"
-                className="pl-6 w-72 h-16 border-2"
-              ></input>
-            </div>
+          {/* 버튼 영역 */}
+          <div className="flex flex-col gap-4">
+            <button
+              className="w-full py-3 text-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition"
+              onClick={() => handleSocialLogin("google")}
+            >
+              🚀 구글 로그인
+            </button>
+            <button
+              className="w-full py-3 text-lg bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition"
+              onClick={() => handleSocialLogin("naver")}
+            >
+              🌿 네이버 로그인
+            </button>
+          </div>
 
-            {/* PW */}
-            <div className="flex justify-center items-center gap-5">
-              <label>PW : </label>
-              <input
-                type="pw"
-                placeholder="PASSWORD"
-                className="pl-6 w-72 h-16 border-2"
-              ></input>
-            </div>
-
-            <div className="flex w-72 px-0 mx-0 justify-end items-center">
-              <button
-                type="button"
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                onClick={handleSubmit}
-              >
-                Submit
-              </button>
-            </div>
-          </form>
+          {/* 추가 정보 */}
+          <p className="text-center text-gray-500 text-sm mt-6">
+            소셜 로그인으로 서비스를 안전하게 이용하세요.
+          </p>
         </div>
-      </form>
+      </div>
     </div>
   );
-}
+};
+
+export default Login;
