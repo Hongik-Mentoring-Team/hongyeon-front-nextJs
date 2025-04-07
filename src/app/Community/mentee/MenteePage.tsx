@@ -3,20 +3,21 @@
 // 멘티의 글 작성 페이지지
 import React, { useState, useEffect } from "react";
 import MenteeLayout from "./MenteeLayout"; // ✅ 레이아웃 파일 분리
+import { MenteePostCardProps } from "@/app/(Components)/ui/post/MenteePostCardProps";
 
 interface Tag {
   id: number;
   name: string;
 }
 
-interface Post {
-  postId: number;
-  title: string;
-  content: string;
-  author: string;
-  tagId: number;
-  createdAt: string;
-}
+// interface Post {
+//   postId: number;
+//   title: string;
+//   content: string;
+//   author: string;
+//   tagId: number;
+//   createdAt: string;
+// }
 
 interface MenteePageProps {
   initialTags: Tag[];
@@ -28,7 +29,7 @@ const MenteePage: React.FC<MenteePageProps> = ({ initialTags }) => {
   const [selectedTags, setSelectedTags] = useState<number[]>(
     defaultTag ? [defaultTag.id] : []
   );
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<MenteePostCardProps[]>([]);
   const [searchTerm, setSearchTerm] = useState(""); // 검색어 상태 추가
 
   // ✅ 태그 선택 / 해제 기능

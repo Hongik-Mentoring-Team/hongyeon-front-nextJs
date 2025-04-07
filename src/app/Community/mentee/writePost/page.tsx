@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { getTags } from "@/lib/server/tags";
 import { useRouter } from "next/navigation";
+import Input from "@/app/(Components)/ui/Input";
+import TagButton from "@/app/(Components)/ui/TagButton";
+import Button from "@/app/(Components)/ui/Button";
 
 interface Tag {
   id: number;
@@ -84,32 +87,27 @@ const WriteMenteePost = () => {
       {/* 제목 입력 */}
       <div className="mb-4">
         <label className="block text-lg font-medium mb-2">제목</label>
-        <input
+        <Input
           type="text"
           placeholder="게시글 제목을 입력하세요"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
+      {/* 태그 선택 */}
       {/* 태그 선택 */}
       <div className="mb-4">
         <label className="block text-lg font-medium mb-2">게시글 태그</label>
         <div className="flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <button
+            <TagButton
               key={tag.id}
-              type="button"
-              className={`px-4 py-2 rounded-md border ${
-                selectedTags.includes(tag.id)
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700"
-              }`}
+              selected={selectedTags.includes(tag.id)}
               onClick={() => handleTagSelection(tag.id)}
             >
               {tag.name}
-            </button>
+            </TagButton>
           ))}
         </div>
       </div>
@@ -153,12 +151,9 @@ const WriteMenteePost = () => {
       </div>
 
       {/* 등록 버튼 */}
-      <button
-        onClick={handleSubmit}
-        className="w-full bg-blue-600 text-white py-3 rounded-md font-medium hover:bg-blue-700 transition-colors"
-      >
+      <Button onClick={handleSubmit} variant="primary">
         게시글 등록
-      </button>
+      </Button>
     </div>
   );
 };

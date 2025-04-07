@@ -1,45 +1,98 @@
+"use client";
+
+import type React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home, LayoutList, UserCircle } from "lucide-react";
 
 interface SidebarLinkProps {
-  // href: string;
-  label: string;
   href: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  isActive?: boolean;
 }
 
-const SidebarLink = ({ label, href }: SidebarLinkProps) => {
+const SidebarLink = ({ href, icon, children, isActive }: SidebarLinkProps) => {
   return (
     <Link
       href={href}
-      className="cursor-pointer flex items-center justify-start pl-4 text-xl hover:bg-blue-100"
+      className={`
+        flex items-center gap-4 rounded-lg px-4 py-3 text-lg font-medium
+        transition-all duration-200 ease-in-out
+        ${
+          isActive
+            ? "bg-blue-600 text-white"
+            : "text-neutral-800 hover:bg-blue-100 hover:text-blue-800"
+        }
+      `}
     >
-      {label}
+      <span className="flex-shrink-0">{icon}</span>
+      <span>{children}</span>
     </Link>
   );
 };
 
-import React from "react";
+interface SidebarProps {
+  navbarHeight?: number;
+}
 
-const Sidebar = () => {
-  // const memberID = "123";
+export function Sidebar( { navbarHeight }:SidebarProps) {
+  const pathname = usePathname();
+
+  const menuItems = [
+    { href: "/", label: "홈", icon: <Home size={22} /> },
+    {
+      href: "/Community/mentor",
+      label: "멘토 게시판",
+      icon: <LayoutList size={22} />,
+    },
+    {
+      href: "/Community/mentee",
+      label: "멘티 게시판",
+      icon: <LayoutList size={22} />,
+    },
+    { href: "/profile", label: "마이페이지", icon: <UserCircle size={22} /> },
+  ];
+
   return (
-    <div className="fixed flex flex-col justify-between w-64 h-screen p-4 pb-[100px] shadow-md border-r-2">
-      {/* Menu */}
-      <div className="flex flex-col h-64 justify-between mt-4 gap-5">
-        <SidebarLink label={`홈`} href="/" />
-        {/* <SidebarLink label={`멘토멘티 신청하기`} href=""/> */}
-        <SidebarLink label={`멘토 게시판`} href="/Community/mentor" />
-        <SidebarLink label={`멘티 게시판`} href="/Community/mentee" />
-        <SidebarLink label={`마이 페이지`} href={`/profile`} />
-      </div>
+    <aside className="fixed left-0 w-64 flex flex-col border-r border-neutral-200 bg-white px-6 py-8 shadow-sm"
+    style={{ top: `${navbarHeight}px`, height: `calc(100vh - ${navbarHeight}px)` }} // ✅ 위치와 높이 지정
+      >
+      {/* 상단 브랜드 영역
+      <div className="mb-10">
+        <h1 className="text-2xl font-bold text-blue-600 tracking-tight">
+          홍익멘토
+        </h1>
+        <p className="text-sm text-neutral-500 mt-1">오픈소스 멘토링 서비스</p>
+      </div> */}
 
-      {/* Footer */}
-      <div>
-        <p className="items-center text-center text-xs text-gray-500">
-          &copy; 2025 HongikMentor
+      {/* 메뉴 리스트 */}
+      <nav className="flex-1">
+        <ul className="flex flex-col gap-4">
+          {menuItems.map((item) => (
+            <li key={item.href}>
+              <SidebarLink
+                href={item.href}
+                icon={item.icon}
+                isActive={pathname === item.href}
+              >
+                {item.label}
+              </SidebarLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* 하단 카피라이트 */}
+      <div className="mt-12 pt-6 border-t text-center">
+        <p className="text-xs text-neutral-400 leading-5">
+          © 2025 홍익멘토
+          <br />
+          모든 권리 보유
         </p>
       </div>
-    </div>
+    </aside>
   );
-};
+}
 
 export default Sidebar;

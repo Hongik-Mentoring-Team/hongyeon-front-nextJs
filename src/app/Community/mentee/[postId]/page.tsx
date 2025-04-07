@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Input from "@/app/(Components)/ui/Input"; // 변경사항: 공통 Input 컴포넌트 import
+import Button from "@/app/(Components)/ui/Button"; // 변경사항: 공통 Button 컴포넌트 import
+import TextButton from "@/app/(Components)/ui/TextButton"; // 변경사항: 공통 TextButton 컴포넌트 import
+import TagButton from "@/app/(Components)/ui/TagButton"; // 변경사항: 공통 TagButton 컴포넌트 import
 
 /** [변경사항: MentorPostDetail 코드와 동일하게, Post 인터페이스에 chatRoomId, closed, ... 추가] */
 interface Comment {
@@ -89,8 +93,7 @@ const MenteePostDetail = () => {
       alert("지원이 완료되었습니다!");
     } catch (error: unknown) {
       console.error("지원 요청 오류:", error);
-  
-  }
+    }
   };
 
   // ==========================================
@@ -112,7 +115,7 @@ const MenteePostDetail = () => {
         }
       );
       if (!res.ok) throw new Error("댓글 등록 실패");
-      const { data }=await res.json();      
+      const { data } = await res.json();
 
       setNewComment("");
       setPost((prev) => ({
@@ -124,7 +127,7 @@ const MenteePostDetail = () => {
             commentId: data.commentId,
             owner: true,
             createdAt: new Date().toISOString(),
-          }as Comment,
+          } as Comment,
         ],
       }));
     } catch (error) {
@@ -186,7 +189,11 @@ const MenteePostDetail = () => {
         ...prev!,
         comments: prev!.comments.map((c) =>
           c.commentId === commentId
-            ? { ...c, comment: updatedComment.editedText ?? c.comment, editing: false }
+            ? {
+                ...c,
+                comment: updatedComment.editedText ?? c.comment,
+                editing: false,
+              }
             : c
         ),
       }));
@@ -333,17 +340,17 @@ const MenteePostDetail = () => {
       {/* 게시글 소유자면 수정/삭제 */}
       {post.owner && (
         <div className="flex gap-2">
-          <button
-            className="text-blue-500"
+          <TextButton
+            variant="gray"
             onClick={() =>
               router.push(`/Community/mentee/editPost/${post.postId}`)
             }
           >
             수정
-          </button>
-          <button className="text-red-500" onClick={handleDeletePost}>
+          </TextButton>
+          <TextButton variant="gray" onClick={handleDeletePost}>
             삭제
-          </button>
+          </TextButton>
         </div>
       )}
 
@@ -382,24 +389,19 @@ const MenteePostDetail = () => {
       {/* 닉네임 입력 + 지원하기 */}
       {!post.owner && (
         <div className="mt-6 flex items-center gap-2">
-          <input
+          <Input
             type="text"
             placeholder="닉네임을 입력하세요..."
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
-            className="p-2 border rounded-md flex-1 focus:ring-2 focus:ring-blue-500"
           />
-          <button
+          <Button
             onClick={handleApply}
             disabled={post.closed || !nickname.trim()}
-            className={`px-4 py-2 rounded-md font-medium transition-colors ${
-              post.closed || !nickname.trim()
-                ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
+            size="lg"
           >
             {post.closed ? "모집이 마감되었습니다" : "지원하기"}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -445,86 +447,80 @@ const MenteePostDetail = () => {
       </div>
 
       {/* 댓글 목록 */}
-      <div className="mt-6 p-4 bg-gray-100 border rounded-lg">
-        <h2 className="text-lg font-bold mb-2">💬 댓글</h2>
-        {post.comments.length > 0 ? (
-          post.comments.map((comment) => (
-            <div
-              key={comment.commentId}
-              className="p-3 bg-white rounded-lg shadow mb-2"
-            >
-              <div className="flex justify-between items-center">
+      {/* 댓글 목록 */}
+      {post.comments.map((comment) => (
+        <div
+          key={comment.commentId}
+          className="p-3 bg-white rounded-lg shadow mb-2"
+        >
+          <div className="flex justify-between items-center">
+            {comment.editing ? (
+              <Input
+                type="text"
+                value={comment.editedText}
+                onChange={(e) =>
+                  handleCommentChange(comment.commentId, e.target.value)
+                }
+              />
+            ) : (
+              <p className="text-sm text-gray-800">{comment.comment}</p>
+            )}
+
+            {comment.owner && (
+              <div className="flex gap-2">
                 {comment.editing ? (
-                  <input
-                    type="text"
-                    value={comment.editedText}
-                    onChange={(e) =>
-                      handleCommentChange(comment.commentId, e.target.value)
-                    }
-                    className="flex-1 p-1 border border-gray-300 rounded-md text-sm"
-                  />
+                  <>
+                    <TextButton
+                      variant="primary"
+                      size="sm"
+                      onClick={() => handleSaveComment(comment.commentId)}
+                    >
+                      저장
+                    </TextButton>
+                    <TextButton
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleCancelEdit(comment.commentId)}
+                    >
+                      취소
+                    </TextButton>
+                  </>
                 ) : (
-                  <p className="text-sm text-gray-800">{comment.comment}</p>
-                )}
-                {comment.owner && (
-                  <div className="flex gap-2">
-                    {comment.editing ? (
-                      <>
-                        <button
-                          className="bg-transparent text-blue-500 text-xs hover:text-blue-700 transition-colors"
-                          onClick={() => handleSaveComment(comment.commentId)}
-                        >
-                          저장
-                        </button>
-                        <button
-                          className="bg-transparent text-gray-500 text-xs hover:text-gray-700 transition-colors"
-                          onClick={() => handleCancelEdit(comment.commentId)}
-                        >
-                          취소
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="bg-transparent text-gray-500 text-xs hover:text-gray-700 transition-colors"
-                          onClick={() => handleEditComment(comment.commentId)}
-                        >
-                          수정
-                        </button>
-                        <button
-                          className="bg-transparent text-gray-500 text-xs hover:text-gray-700 transition-colors"
-                          onClick={() => handleDeleteComment(comment.commentId)}
-                        >
-                          삭제
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  <>
+                    <TextButton
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleEditComment(comment.commentId)}
+                    >
+                      수정
+                    </TextButton>
+                    <TextButton
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDeleteComment(comment.commentId)}
+                    >
+                      삭제
+                    </TextButton>
+                  </>
                 )}
               </div>
-              <span className="text-xs text-gray-500">{comment.createdAt}</span>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500">아직 댓글이 없습니다.</p>
-        )}
-      </div>
+            )}
+          </div>
+          <span className="text-xs text-gray-500">{comment.createdAt}</span>
+        </div>
+      ))}
 
       {/* 댓글 입력창 */}
       <div className="mt-4 flex gap-2">
-        <input
+        <Input
           type="text"
           placeholder="댓글을 입력하세요..."
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          className="flex-1 p-2 border rounded-md"
         />
-        <button
-          onClick={handleCommentSubmit}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md"
-        >
+        <Button onClick={handleCommentSubmit} size="lg">
           등록
-        </button>
+        </Button>
       </div>
     </div>
   );

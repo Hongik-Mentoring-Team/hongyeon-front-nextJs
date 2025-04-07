@@ -4,6 +4,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { useParams } from "next/navigation";
+import Button from "@/app/(Components)/ui/Button"; // 변경사항
+import Input from "@/app/(Components)/ui/Input"; // 변경사항
 
 // 백엔드의 WebSocket 엔드포인트
 const WS_ENDPOINT = "http://localhost:8080/ws-stomp"; // SockJS 사용 시
@@ -32,7 +34,6 @@ interface ChatMessageResponseDto {
 
 /**
  * ChatMessageStompResDto: 서버에서 받는 채팅 메시지(for webSocket)
- *
  */
 interface ChatMessageStompResDto {
   chatRoomId: number;
@@ -44,10 +45,6 @@ interface ChatMessageStompResDto {
 
 /**
  * ChatRoomResponseDto: 서버에서 GET /api/v1/chatRoom/history/{chatRoomId} 시 반환
- * - chatMessages: ChatMessageResponseDto[]
- * - chatMembers: ChatRoomMemberResDto[]
- * - name: string (채팅방 이름)
- * - currentChatMemberId: number (내 채팅멤버 ID)
  */
 interface ChatRoomResponseDto {
   chatMessages: ChatMessageResponseDto[];
@@ -74,22 +71,19 @@ function ParticipateChatRoom() {
   // ======================================================
   // 1) STOMP 클라이언트 생성 및 구독
   useEffect(() => {
-    if (!chatRoomId || chatRoomMemberId === -1) return; //chatRoomMemberId가 세팅된 후에 구독
+    if (!chatRoomId || chatRoomMemberId === -1) return;
 
     const stompClient = new Client({
-      webSocketFactory: () =>
-        new SockJS(WS_ENDPOINT),
+      webSocketFactory: () => new SockJS(WS_ENDPOINT),
       reconnectDelay: 5000,
       debug: (msg) => console.log(msg),
       onConnect: () => {
         console.log("STOMP Connection 성공");
         const subscribeUrl = `/topic/chat/${chatRoomId}`;
         stompClient.subscribe(subscribeUrl, (message) => {
-          //구독 및 메시지 수신
           if (!message.body) return;
           console.log("수신된 메시지: ", message.body);
 
-          // msgData는 ChatMessageReqeDto 형태
           const msgData: ChatMessageStompResDto = JSON.parse(message.body);
           const receivedMessage: ChatMessageResponseDto = {
             chatRoomId: msgData.chatRoomId,
@@ -97,7 +91,7 @@ function ParticipateChatRoom() {
             content: msgData.content,
             createdAt: new Date().toISOString(),
             memberId: msgData.memberId,
-            owner: msgData.chatRoomMemberId === chatRoomMemberId, //현재 클라이언트가 보낸 메시지 식별
+            owner: msgData.chatRoomMemberId === chatRoomMemberId,
           };
           console.log("1:", msgData);
           console.log("2:  ", chatRoomMemberId);
@@ -133,10 +127,8 @@ function ParticipateChatRoom() {
   }, [messages]);
 
   // ===============================================================
-
   /**
    * 채팅방 메시지 내역 요청
-   * /api/v1/chatRoom/history/{chatRoomId} => ChatRoomResponseDto
    */
   const fetchChatHistory = async () => {
     try {
@@ -151,14 +143,9 @@ function ParticipateChatRoom() {
       if (!response.ok) {
         throw new Error("채팅 내역 요청 실패!");
       }
-      // ChatRoomResponseDto 형태
       const history: ChatRoomResponseDto = await response.json();
-
-      // 메시지 배열 설정
       setMessages(history.chatMessages);
       console.log("채팅방 내역 불러오기 성공", history.chatMessages);
-
-      // 멤버 정보, 방 이름 설정
       setCurrentMembersInfo(history.chatMembers);
       setRoomName(history.name);
       setChatRoomMemberId(history.currentChatMemberId);
@@ -177,14 +164,12 @@ function ParticipateChatRoom() {
       alert("소켓 연결이 안 되어 있습니다.");
       return;
     }
-    // 내가 보낸 메시지의 닉네임
+
     const member = currentMembersInfo.find(
       (item) => String(item.chatRoomMemberId) === String(chatRoomMemberId)
     );
     const currentNickname = member ? member.nickname : "익명";
 
-    // 서버에 전송할 DTO
-    //여기에 위에서 정의한 인터페이스 chatmessageReqdto를 이용하고싶어
     const chatMessageDto = {
       chatRoomId: Number(chatRoomId),
       nickname: currentNickname,
@@ -205,15 +190,15 @@ function ParticipateChatRoom() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto my-10 p-6 bg-white rounded-lg shadow-md">
+    <div className="max-w-3xl mx-auto my-10 p-6 bg-white rounded-xl shadow-md">
       {/* 채팅방 헤더 */}
       <h1 className="text-3xl font-bold mb-4">채팅방: {roomName}</h1>
-      <p className="text-gray-600 text-sm mb-2">채팅방 ID: {chatRoomId}</p>
+      <p className="text-neutral-500 text-sm mb-2">채팅방 ID: {chatRoomId}</p>
 
       {/* 참여 멤버 */}
       <div className="mb-4">
         <p className="text-sm font-semibold">참여 멤버:</p>
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-neutral-500">
           {currentMembersInfo.map((member) => (
             <span key={member.chatRoomMemberId} className="mr-2">
               {member.nickname} (채팅멤버ID: {member.chatRoomMemberId})
@@ -223,29 +208,26 @@ function ParticipateChatRoom() {
       </div>
 
       {/* 채팅 메시지 목록 */}
-      <div className="border border-gray-300 h-80 overflow-y-auto p-3 rounded-md mb-4">
+      <div className="border border-neutral-200 h-80 overflow-y-auto p-3 rounded-xl mb-4 bg-neutral-50">
         {messages.map((msg, idx) => (
-          // 본인 메시지는 우측. 상대방 메시지는 좌측.
           <div
             key={idx}
             className={`mb-2 flex ${
               msg.owner ? "justify-end" : "justify-start"
             }`}
           >
-            {/* 실제 메시지 박스 */}
             <div
-              className={`max-w-[70%] p-2 rounded-lg ${
-                msg.owner ? "bg-blue-100 text-right" : "bg-gray-100 text-left"
+              className={`max-w-[70%] p-3 rounded-xl text-sm ${
+                msg.owner
+                  ? "bg-primary/10 text-right"
+                  : "bg-neutral-100 text-left"
               }`}
             >
-              {/* 작성자 닉네임/아이디 영역 */}
-              <strong className="block text-gray-800 text-sm">
+              <strong className="block text-neutral-800">
                 {msg.nickname} (memberId: {msg.memberId})
               </strong>
-              {/* 메시지 내용 */}
-              <span className="block text-gray-700">{msg.content}</span>
-              {/* 메시지 날짜 */}
-              <span className="block text-xs text-gray-500">
+              <span className="block text-neutral-700">{msg.content}</span>
+              <span className="block text-xs text-neutral-400">
                 {msg.createdAt}
               </span>
             </div>
@@ -256,18 +238,14 @@ function ParticipateChatRoom() {
 
       {/* 메시지 입력란 */}
       <div className="flex gap-2">
-        <input
-          className="flex-1 p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+        <Input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="메시지를 입력..."
         />
-        <button
-          onClick={sendMessage}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
+        <Button onClick={sendMessage} size="lg">
           전송
-        </button>
+        </Button>
       </div>
     </div>
   );

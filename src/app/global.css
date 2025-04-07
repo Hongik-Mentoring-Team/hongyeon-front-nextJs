@@ -2,12 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ✅ 기본 박스 모델 설정 */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
+/* ✅ 전체 높이 및 너비 설정 */
 html,
 body,
 #root {
@@ -16,4 +18,44 @@ body,
   @apply text-sm;
   @apply bg-white;
   @apply text-gray-900;
+  scroll-behavior: smooth; /* ✅ 새 코드 반영 */
+}
+
+/* ✅ 새 코드의 :root 변수 추가 */
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+/* ✅ body 배경 - 기존 배경 유지하며 변수 기반 배경은 선택 사항으로 아래 위치 */
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* ✅ 헤딩 태그 일괄 굵게 */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold;
+  }
+}
+
+/* ✅ transition 유틸리티 클래스 추가 */
+@layer utilities {
+  .transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
 }

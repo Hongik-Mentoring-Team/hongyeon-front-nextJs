@@ -1,22 +1,26 @@
 import { useRouter } from "next/navigation";
 import { CircleUserRound, Search } from "lucide-react";
+import MenteePostCard from "@/app/(Components)/ui/post/MenteePostCard";
+import { MenteePostCardProps } from "@/app/(Components)/ui/post/MenteePostCardProps";
+import Button from "@/app/(Components)/ui/Button";
+import TagButton from "@/app/(Components)/ui/TagButton";
 
 interface Tag {
   id: number;
   name: string;
 }
 
-interface Post {
-  postId: number;
-  title: string;
-  content: string;
-  author: string;
-  createdAt: string;
-}
+// interface Post {
+//   postId: number;
+//   title: string;
+//   content: string;
+//   author: string;
+//   createdAt: string;
+// }
 
 interface MenteeLayoutProps {
   tags: Tag[];
-  posts: Post[];
+  posts: MenteePostCardProps[];
   selectedTags: number[];
   handleTagSelection: (tagId: number) => void;
   searchTerm: string;
@@ -60,12 +64,19 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
           </h2>
           <div id="MenteeMenuTag" className="flex w-full h-auto py-2 gap-1">
             {tags.map((tag) => (
-              <MenteeTextTag
+              <TagButton
                 key={tag.id}
-                tag={tag}
-                active={selectedTags.includes(tag.id)}
+                selected={selectedTags.includes(tag.id)}
                 onClick={() => handleTagSelection(tag.id)}
-              />
+              >
+                {tag.name}
+              </TagButton>
+              // <MenteeTextTag
+              //   key={tag.id}
+              //   tag={tag}
+              //   active={selectedTags.includes(tag.id)}
+              //   onClick={() => handleTagSelection(tag.id)}
+              // />
             ))}
           </div>
         </div>
@@ -84,12 +95,12 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
           </div>
 
           {/* ✅ 작성하기 버튼 (검색창과 같은 높이, 오른쪽 정렬) */}
-          <button
+          <Button
+            variant="primary"
             onClick={() => router.push("/Community/mentee/writePost")}
-            className="ml-4 px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg transition-colors"
           >
             작성하기
-          </button>
+          </Button>
         </div>
 
         {/* 게시글 목록 */}
@@ -99,13 +110,13 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
         >
           {posts.length > 0 ? (
             posts.map((post) => (
-              <MenteeTextBox
+              <MenteePostCard
                 key={post.postId}
                 postId={post.postId}
                 title={post.title}
-                mainText={post.content}
-                memberID={post.author}
-                date={post.createdAt}
+                content={post.content}
+                memberId={post.memberId}
+                createdAt={post.createdAt}
               />
             ))
           ) : (
@@ -135,32 +146,32 @@ const MenteeTextTag: React.FC<{
   </button>
 );
 
-// ✅ 게시글 블록 컴포넌트
-const MenteeTextBox: React.FC<{
-  postId: number;
-  title: string;
-  mainText: string;
-  memberID: string;
-  date: string;
-}> = ({ postId, title, mainText, memberID, date }) => {
-  const router = useRouter();
+// // ✅ 게시글 블록 컴포넌트
+// const MenteeTextBox: React.FC<{
+//   postId: number;
+//   title: string;
+//   mainText: string;
+//   memberID: string;
+//   date: string;
+// }> = ({ postId, title, mainText, memberID, date }) => {
+//   const router = useRouter();
 
-  return (
-    <div
-      onClick={() => router.push(`/Community/mentee/${postId}`)} // ✅ 클릭 시 이동
-      className="flex flex-col justify-between min-w-[750px] h-[150px] border-2 rounded-lg bg-gray-50 p-4 cursor-pointer hover:bg-gray-100 transition-colors"
-    >
-      <h2 className="w-auto text-gray-800 text-2xl font-bold">{title}</h2>
-      <p className="w-[300px] text-gray-700 line-clamp-1">{mainText}</p>
-      <div className="flex w-full justify-between items-center text-gray-500 text-sm">
-        <div className="flex items-center gap-2">
-          <CircleUserRound size={20} />
-          <span>{memberID}</span>
-        </div>
-        <span>{date}</span>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div
+//       onClick={() => router.push(`/Community/mentee/${postId}`)} // ✅ 클릭 시 이동
+//       className="flex flex-col justify-between min-w-[750px] h-[150px] border-2 rounded-lg bg-gray-50 p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+//     >
+//       <h2 className="w-auto text-gray-800 text-2xl font-bold">{title}</h2>
+//       <p className="w-[300px] text-gray-700 line-clamp-1">{mainText}</p>
+//       <div className="flex w-full justify-between items-center text-gray-500 text-sm">
+//         <div className="flex items-center gap-2">
+//           <CircleUserRound size={20} />
+//           <span>{memberID}</span>
+//         </div>
+//         <span>{date}</span>
+//       </div>
+//     </div>
+//   );
+// };
 
 export default MenteeLayout;

@@ -3,25 +3,26 @@
 import React, { useEffect, useState } from "react";
 import { Bell, CircleUserRound, Settings } from "lucide-react";
 import Link from "next/link";
+import Button from "@/app/(Components)/ui/Button"; // 공통 버튼 컴포넌트
 
-const Navbar = () => {
+// const NAVBAR_HEIGHT = 65; // 고정 높이(px) – tailwind 기준 h-16
+interface NavbarProps {
+  height: number;
+}
+const Navbar = ({ height }: NavbarProps) => {
   const [user, setUser] = useState<string | null>(null);
 
-  // ✅ 백엔드에 사용자 세션 정보 요청
+  // 사용자 세션 정보를 백엔드에서 요청
   useEffect(() => {
     const fetchUserSession = async () => {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/members/session`,
-          { credentials: "include" } // ✅ 세션 쿠키 포함
+          { credentials: "include" }
         );
-
         if (!res.ok) throw new Error("사용자 세션 정보를 불러올 수 없습니다.");
         const data = await res.json();
-        // ✅ 사용자 이름이 있으면 상태 업데이트
         setUser(data.name || null);
-        // 사용자 존재 확인
-        console.log("현재 사용자:", user);
       } catch (error) {
         console.error("세션 요청 실패:", error);
         setUser(null);
@@ -31,7 +32,6 @@ const Navbar = () => {
     fetchUserSession();
   }, []);
 
-  // ✅ 로그아웃 핸들러
   const handleLogout = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/logout`, {
@@ -40,77 +40,69 @@ const Navbar = () => {
       });
 
       if (!res.ok) throw new Error("로그아웃 실패");
-      setUser(null); // ✅ 상태 초기화
+      setUser(null);
     } catch (error) {
       console.error("로그아웃 실패:", error);
     }
   };
 
   return (
-    <div className="fixed flex justify-between items-center w-full h-[66px] px-5 border-b-2 bg-white">
-      {/* Left Side */}
-      <div className="flex items-center text-xl">
-        <Link href="/">HongikMentor</Link>
-      </div>
-
-      {/* Right Side */}
-      <div className="flex items-center gap-4">
-        {/* Search Bar */}
-        <div className="relative flex items-center">
-          <input
-            type="search"
-            placeholder="원하는 질문 찾아보기"
-            className="pl-10 pr-4 py-2 w-72 border-2 border-gray-500 bg-white rounded-lg focus:outline-none focus:border-blue-500"
-          />
-          <div className="absolute left-0 pl-3">
-            <Bell className="w-6 h-6 text-gray-500" />
+    <nav
+      className="fixed top-0 left-0 w-full z-50 bg-white border-b border-neutral-200 shadow-sm"
+      style={{ height: `${height}px` }}
+    >
+      <div className="flex h-full w-full  items-center gap-8 px-10 ">
+        {/* 좌측 로고 */}
+        <div className="pl-10">
+          <Link href="/" className=" text-xl font-bold text-blue-600">
+            홍익멘토
+          </Link>
+        </div>
+        {/* 중앙 검색창 */}
+        <div className="hidden sm:flex flex-1 items-center justify-center px-8">
+          <div className="relative w-full max-w-md">
+            <input
+              type="search"
+              placeholder="원하는 질문 찾아보기"
+              className="w-full rounded-lg border border-neutral-300 bg-white py-2 pl-10 pr-4 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
+            />
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <Bell className="w-4 h-4 text-neutral-400" />
+            </div>
           </div>
         </div>
 
-        {/* Setting (추후 다크 모드 도입 예정) */}
-        <div className="flex items-center">
-          <Settings className="w-6 h-6 text-gray-500" />
+        {/* 우측 유저 액션 */}
+        <div className="flex  gap-5 ml-auto">
+          <Settings className="w-5 h-5 text-neutral-400 hover:text-neutral-700 cursor-pointer" />
+
+          {/* 유저 정보 */}
+          {/* 로그인 상태에 따라 다르게 표시 */}
+          {user ? (
+            <div className="flex items-center gap-2 pr-4">
+              <Link href="/profile">
+                <CircleUserRound className="w-6 h-6 text-neutral-500 hover:text-neutral-700 cursor-pointer" />
+              </Link>
+              <span className="text-sm font-medium text-neutral-700">
+                {user} 님
+              </span>
+              <Button variant="danger" onClick={handleLogout}>
+                로그아웃
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link href="/login">
+                <Button variant="primary">로그인</Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="primary">회원가입</Button>
+              </Link>
+            </div>
+          )}
         </div>
-
-        {/* ✅ 로그인 상태 확인 후 버튼 표시 */}
-        {user ? (
-          <div className="flex items-center gap-4">
-            {/* 작은 사람 아이콘 → 클릭 시 /profile 이동 */}
-            <Link href="/profile">
-              <CircleUserRound className="w-6 h-6 text-gray-500 cursor-pointer hover:text-gray-700" />
-            </Link>
-            <span className="text-gray-700">{user} 님,</span>
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-500 dark:hover:bg-red-600 focus:outline-none dark:focus:ring-red-700"
-            >
-              로그아웃
-            </button>
-          </div>
-        ) : (
-          <div className="flex justify-center items-center gap-4">
-            <Link href="/login">
-              <button
-                type="button"
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-              >
-                로그인
-              </button>
-            </Link>
-
-            <Link href="/signup">
-              <button
-                type="button"
-                className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-              >
-                회원가입
-              </button>
-            </Link>
-          </div>
-        )}
       </div>
-    </div>
+    </nav>
   );
 };
 
