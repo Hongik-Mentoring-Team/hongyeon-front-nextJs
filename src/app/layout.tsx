@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_KR } from "next/font/google";
 import "./global.css";
 import DashboardWrapper from "./DashboardWrapper";
+import { ThemeProvider } from "next-themes";
 
 const NotoSansKR = Noto_Sans_KR({
   subsets: ["latin"],
@@ -19,9 +20,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${NotoSansKR.className} font-medium antialiased`}>
-        <DashboardWrapper>{children}</DashboardWrapper>
+        <ThemeProvider attribute="class">
+          <DashboardWrapper>{children}</DashboardWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

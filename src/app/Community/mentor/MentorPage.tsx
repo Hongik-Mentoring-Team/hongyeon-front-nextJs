@@ -70,7 +70,7 @@ const MentorPage: React.FC<MentorPageProps> = ({ initialTags }) => {
     <div className="flex w-full h-auto">
       <div
         id="MentorContainer"
-        className="flex flex-col w-full h-auto px-32 gap-12"
+        className="flex flex-col w-full h-auto px-16 lg:px-32 gap-12"
       >
         {/* 게시판 제목 */}
         <div
@@ -86,15 +86,27 @@ const MentorPage: React.FC<MentorPageProps> = ({ initialTags }) => {
         {/* 태그 필터 */}
         <div
           id="MentorMenuBlock"
-          className="flex flex-col w-full h-auto my-4 gap-1"
+          className="flex flex-col w-full h-auto my-4 gap-1 overflow-hidden"
         >
           <h2 id="MentorMenuTitle" className="text-2xl font-semibold">
             태그 선택
           </h2>
-          <div id="MentorMenuTag" className="flex w-full h-auto py-2 gap-1">
+          <div
+            id="MentorMenuTag"
+            className="flex animate-infiniteSlide whitespace-nowrap gap-1"
+          >
             {tags.map((tag) => (
               <MentorTextTag
                 key={tag.id}
+                tag={tag}
+                active={selectedTags.includes(tag.id)}
+                onClick={() => handleTagSelection(tag.id)}
+              />
+            ))}
+
+            {tags.map((tag) => (
+              <MentorTextTag
+                key={`copy-${tag.id}`}
                 tag={tag}
                 active={selectedTags.includes(tag.id)}
                 onClick={() => handleTagSelection(tag.id)}

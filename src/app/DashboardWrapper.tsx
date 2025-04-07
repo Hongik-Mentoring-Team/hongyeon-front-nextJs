@@ -16,8 +16,8 @@ const DashboardWrapper = ({ children }: { children: ReactNode }) => {
         <Navbar />
       </nav>
 
-      {!isLoginPage && ( // 변경사항: 로그인 페이지에서는 Sidebar 숨김
-        <aside className="w-64">
+      {!isLoginPage && (
+        <aside className="hidden md:block w-64">
           <Sidebar />
         </aside>
       )}
@@ -27,10 +27,11 @@ const DashboardWrapper = ({ children }: { children: ReactNode }) => {
           isLoginPage ? "justify-center items-center" : ""
         }`}
       >
-        {/* 변경사항: 로그인 페이지에서는 중앙 정렬 적용 */}
         <div
           className={`flex-1 w-full h-auto ${
-            isLoginPage ? "justify-center items-center bg-gray-50" : "pl-64"
+            isLoginPage
+              ? "justify-center items-center bg-gray-50"
+              : "md:pl-64 pl-0"
           }`}
         >
           {children}

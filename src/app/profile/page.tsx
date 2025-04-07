@@ -61,9 +61,9 @@ export default function Profile() {
     profile?.posts?.filter((post) => post.category === "MENTEE") || [];
 
   return (
-    <div className="flex flex-col w-full h-auto px-24">
+    <div className="flex flex-col w-full h-auto px-6 md:px-8 lg:px-16 gap-6 lg:gap-0">
       {/* 상단 프로필 정보 */}
-      <div className="flex w-full h-auto justify-between items-end gap-6">
+      <div className="flex w-full h-auto justify-between items-end mt-4 gap-6">
         {/* 프로필 사진 */}
         <div className="flex w-1/2 h-auto justify-center">
           {profile?.imageUrl ? (
@@ -123,9 +123,9 @@ export default function Profile() {
       </div>
 
       {/* 참여한 게시판 내역 */}
-      <div className="flex w-full h-auto p-4 gap-5 mt-6">
+      <div className="flex flex-col lg:flex-row w-full h-auto mt-6 gap-6">
         {/* 멘토 게시판 */}
-        <div className="flex flex-col w-1/2 h-full p-4 bg-blue-50">
+        <div className="flex flex-col w-full lg:w-1/2 h-full p-4 bg-blue-50">
           <h2 className="text-lg font-bold mb-3">멘토로 활동한 내역</h2>
           {mentorPosts.length > 0 ? (
             mentorPosts.map((post) => (
@@ -145,7 +145,7 @@ export default function Profile() {
         </div>
 
         {/* 멘티 게시판 */}
-        <div className="flex flex-col w-1/2 h-full p-4 bg-blue-50">
+        <div className="flex flex-col w-full lg:w-1/2 h-full p-4 bg-blue-50">
           <h2 className="text-lg font-bold mb-3">멘티로 활동한 내역</h2>
           {menteePosts.length > 0 ? (
             menteePosts.map((post) => (
@@ -166,8 +166,8 @@ export default function Profile() {
       </div>
 
       {/* 작성한 리뷰 / 전달받은 리뷰 */}
-      <div className="flex w-full mt-6 gap-6">
-        <div className="flex flex-col w-1/2 p-4 bg-gray-50 rounded-lg">
+      <div className="flex flex-col lg:flex-row w-full mt-6 gap-6">
+        <div className="flex flex-col w-full lg:w-1/2 p-4 bg-gray-50 rounded-lg">
           <h2 className="text-lg font-bold mb-3">작성한 리뷰</h2>
           {profile?.writtedReviews.length ? (
             profile.writtedReviews.map((review) => (
@@ -189,7 +189,7 @@ export default function Profile() {
           )}
         </div>
 
-        <div className="flex flex-col w-1/2 p-4 bg-gray-50 rounded-lg">
+        <div className="flex flex-col w-full lg:w-1/2 p-4 bg-gray-50 rounded-lg">
           <h2 className="text-lg font-bold mb-3">전달받은 리뷰</h2>
           {profile?.receivedReviews.length ? (
             profile.receivedReviews.map((review) => (
