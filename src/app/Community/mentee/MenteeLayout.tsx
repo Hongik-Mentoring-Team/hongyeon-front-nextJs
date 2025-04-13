@@ -1,9 +1,10 @@
 import { useRouter } from "next/navigation";
-import { CircleUserRound, Search } from "lucide-react";
+import { CircleUserRound, Search, PenLine } from "lucide-react";
 import MenteePostCard from "@/app/(Components)/ui/post/MenteePostCard";
 import { MenteePostCardProps } from "@/app/(Components)/ui/post/MenteePostCardProps";
 import Button from "@/app/(Components)/ui/Button";
 import TagButton from "@/app/(Components)/ui/TagButton";
+import Input from "@/app/(Components)/ui/Input";
 
 interface Tag {
   id: number;
@@ -38,15 +39,15 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
   const router = useRouter(); // ✅ Next.js 라우터 사용
 
   return (
-    <div className="flex w-full h-auto">
+    <div className="flex w-full h-auto bg-white pt-[70px]">
       <div
         id="MenteeContainer"
-        className="flex flex-col w-full h-auto px-32 gap-12"
+        className="flex flex-col w-full h-auto px-32 gap-8 bg-white"
       >
         {/* 게시판 제목 */}
         <div
           id="MenteeTitle"
-          className="flex flex-col w-full h-auto my-5 gap-4"
+          className="flex flex-col w-full h-auto my-5 gap-4 border border-gray-300 rounded-lg p-5 bg-white"
         >
           <h1 className="text-4xl font-bold">멘티 게시판</h1>
           <h3 className="text-2xl font-semibold">
@@ -54,59 +55,65 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
           </h3>
         </div>
 
-        {/* 태그 필터 */}
-        <div
-          id="MenteeMenuBlock"
-          className="flex flex-col w-full h-auto my-4 gap-1"
-        >
-          <h2 id="MenteeMenuTitle" className="text-2xl font-semibold">
-            태그 선택
-          </h2>
-          <div id="MenteeMenuTag" className="flex w-full h-auto py-2 gap-1">
-            {tags.map((tag) => (
-              <TagButton
-                key={tag.id}
-                selected={selectedTags.includes(tag.id)}
-                onClick={() => handleTagSelection(tag.id)}
-              >
-                {tag.name}
-              </TagButton>
-              // <MenteeTextTag
-              //   key={tag.id}
-              //   tag={tag}
-              //   active={selectedTags.includes(tag.id)}
-              //   onClick={() => handleTagSelection(tag.id)}
-              // />
-            ))}
-          </div>
-        </div>
-
-        {/* 검색창 & 작성하기 버튼 */}
-        <div className="flex w-full items-center justify-between mb-6">
-          <div className="relative w-full sm:w-64">
-            <input
-              type="text"
-              placeholder="검색어를 입력하세요"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-          </div>
-
-          {/* ✅ 작성하기 버튼 (검색창과 같은 높이, 오른쪽 정렬) */}
-          <Button
-            variant="primary"
-            onClick={() => router.push("/Community/mentee/writePost")}
+        {/* 태그, 검색, 작성하기 영역을 하나의 박스로 묶기 */}
+        <div className="w-full border border-gray-300 rounded-lg p-6 bg-white shadow-sm">
+          {/* 태그 필터 */}
+          <div
+            id="MenteeMenuBlock"
+            className="flex flex-col w-full h-auto gap-3 mb-5"
           >
-            작성하기
-          </Button>
+            <h2 id="MenteeMenuTitle" className="text-2xl font-semibold">
+              태그 선택
+            </h2>
+            <div
+              id="MenteeMenuTag"
+              className="flex flex-wrap w-full h-auto py-2 gap-2"
+            >
+              {tags.map((tag) => (
+                <TagButton
+                  key={tag.id}
+                  selected={selectedTags.includes(tag.id)}
+                  onClick={() => handleTagSelection(tag.id)}
+                >
+                  {tag.name}
+                </TagButton>
+              ))}
+            </div>
+          </div>
+
+          {/* 구분선 */}
+          <div className="w-full h-px bg-gray-200 my-4"></div>
+
+          {/* 검색창 & 작성하기 버튼 */}
+          <div className="flex w-full items-center justify-between gap-4 pt-2">
+            <div className="relative w-full sm:w-64">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="검색어를 입력하세요"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 border border-gray-500 focus:border-primary focus:ring-primary"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500" />
+              </div>
+            </div>
+
+            {/* ✅ 작성하기 버튼 (검색창과 같은 높이, 오른쪽 정렬) */}
+            <Button
+              variant="primary"
+              icon={<PenLine size={16} />}
+              onClick={() => router.push("/Community/mentee/writePost")}
+            >
+              작성하기
+            </Button>
+          </div>
         </div>
 
         {/* 게시글 목록 */}
         <div
           id="MenteeTextBoxContainer"
-          className="flex flex-col w-full h-auto gap-2"
+          className="flex flex-col w-full h-auto gap-3 py-2"
         >
           {posts.length > 0 ? (
             posts.map((post) => (
@@ -117,34 +124,27 @@ const MenteeLayout: React.FC<MenteeLayoutProps> = ({
                 content={post.content}
                 memberId={post.memberId}
                 createdAt={post.createdAt}
+                author={post.author}
               />
             ))
           ) : (
-            <p className="text-center text-gray-500">게시글이 없습니다.</p>
+            <div className="text-center py-10 bg-white rounded-xl border border-gray-300">
+              <p className="text-gray-500">게시글이 없습니다.</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={() => router.push("/Community/mentee/writePost")}
+              >
+                첫 게시글 작성하기
+              </Button>
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 };
-
-// ✅ 태그 버튼 컴포넌트
-const MenteeTextTag: React.FC<{
-  tag: Tag;
-  active: boolean;
-  onClick: () => void;
-}> = ({ tag, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-      active
-        ? "bg-blue-600 text-white"
-        : "bg-white text-gray-700 hover:bg-gray-100"
-    }`}
-  >
-    {tag.name}
-  </button>
-);
 
 // // ✅ 게시글 블록 컴포넌트
 // const MenteeTextBox: React.FC<{

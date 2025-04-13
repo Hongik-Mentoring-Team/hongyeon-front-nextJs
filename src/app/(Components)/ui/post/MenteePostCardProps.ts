@@ -7,4 +7,5 @@ export interface MenteePostCardProps {
   content: string;
   memberId: string;
   createdAt: string;
+  author: string;
 }

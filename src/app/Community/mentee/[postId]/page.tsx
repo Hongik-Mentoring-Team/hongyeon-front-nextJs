@@ -2,10 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Input from "@/app/(Components)/ui/Input"; // 변경사항: 공통 Input 컴포넌트 import
-import Button from "@/app/(Components)/ui/Button"; // 변경사항: 공통 Button 컴포넌트 import
-import TextButton from "@/app/(Components)/ui/TextButton"; // 변경사항: 공통 TextButton 컴포넌트 import
-import TagButton from "@/app/(Components)/ui/TagButton"; // 변경사항: 공통 TagButton 컴포넌트 import
+import Input from "@/app/(Components)/ui/Input";
+import Button from "@/app/(Components)/ui/Button";
+import {
+  ArrowLeft,
+  MessageCircle,
+  ThumbsUp,
+  Users,
+  User,
+  Calendar,
+  Lock,
+  Unlock,
+} from "lucide-react";
 
 /** [변경사항: MentorPostDetail 코드와 동일하게, Post 인터페이스에 chatRoomId, closed, ... 추가] */
 interface Comment {
@@ -326,201 +334,306 @@ const MenteePostDetail = () => {
 
   // ==========================================
   // 렌더링
-  if (!post) {
-    return <p className="text-center mt-10">게시글을 불러오는 중...</p>;
-  }
+  if (!post)
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-8 w-64 bg-gray-200 rounded-full mb-4"></div>
+          <div className="h-6 w-40 bg-gray-200 rounded-full"></div>
+        </div>
+      </div>
+    );
 
   return (
-    <div className="max-w-3xl mx-auto my-10 p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-      <p className="text-gray-600 text-sm mb-4">
-        작성자: {post.author} | {post.createdAt}
-      </p>
+    <div className="w-full max-w-[95%] mx-auto py-4 px-2 pt-[20px]">
+      {/* Back button */}
+      <button
+        onClick={() => router.push("/Community/mentee")}
+        className="flex items-center text-gray-600 hover:text-primary mb-4 transition-colors"
+      >
+        <ArrowLeft size={18} className="mr-2" />
+        <span>게시판으로 돌아가기</span>
+      </button>
 
-      {/* 게시글 소유자면 수정/삭제 */}
-      {post.owner && (
-        <div className="flex gap-2">
-          <TextButton
-            variant="gray"
-            onClick={() =>
-              router.push(`/Community/mentee/editPost/${post.postId}`)
-            }
-          >
-            수정
-          </TextButton>
-          <TextButton variant="gray" onClick={handleDeletePost}>
-            삭제
-          </TextButton>
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        {/* Header section */}
+        <div className="bg-gradient-to-r from-primary to-primary/80 p-6 text-white">
+          <h1 className="text-2xl md:text-3xl font-bold">{post.title}</h1>
+          <div className="flex justify-between items-center mt-4">
+            <div className="flex items-center">
+              <User size={18} className="mr-2 opacity-80" />
+              <span className="text-white/90">{post.author}</span>
+            </div>
+            <div className="flex items-center">
+              <Calendar size={16} className="mr-2 opacity-80" />
+              <span className="text-white/80 text-sm">{post.createdAt}</span>
+            </div>
+          </div>
         </div>
-      )}
 
-      {/* 좋아요 수 */}
-      <div className="flex items-center gap-4 text-gray-600 text-sm mt-4 mb-4">
-        <p>👍 좋아요 {post.likeCount}</p>
-      </div>
+        <div className="p-6">
+          {/* Action buttons */}
+          <div className="flex justify-between">
+            <div className="flex items-center">
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                <ThumbsUp size={14} className="mr-1" />
+                {post.likeCount}
+              </span>
+              {post.chatRoomType === "PUBLIC" ? (
+                <span className="ml-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                  <Unlock size={14} className="mr-1" />
+                  공개 채팅방
+                </span>
+              ) : (
+                <span className="ml-2 bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                  <Lock size={14} className="mr-1" />
+                  비공개 채팅방
+                </span>
+              )}
+              {post.closed ? (
+                <span className="ml-2 bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-medium">
+                  모집 마감
+                </span>
+              ) : (
+                <span className="ml-2 bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
+                  모집 중
+                </span>
+              )}
+            </div>
 
-      {/* 채팅방 유형 */}
-      <p className="text-sm font-bold mb-2">
-        💬 채팅방 유형:{" "}
-        {post.chatRoomType === "PUBLIC" ? "공개 채팅방" : "비공개 채팅방"}
-      </p>
-
-      <div className="border-t pt-4">
-        <p className="text-lg">{post.content}</p>
-      </div>
-
-      {/* 모집 정보 */}
-      <div className="mt-6 p-4 bg-gray-50 border rounded-lg">
-        <h2 className="text-lg font-bold mb-2">모집 정보</h2>
-        <p>📌 모집 인원: {post.capacity}명</p>
-        <p>📝 현재 지원자: {post.currentApplicants}명</p>
-        <p className="font-bold">
-          {post.chatRoomType === "PUBLIC" ? "공개 채팅방" : "비공개 채팅방"}
-        </p>
-        <p
-          className={`font-bold ${
-            post.closed ? "text-red-600" : "text-green-600"
-          }`}
-        >
-          {post.closed ? "❌ 모집 마감" : "✅ 모집 중"}
-        </p>
-      </div>
-
-      {/* 닉네임 입력 + 지원하기 */}
-      {!post.owner && (
-        <div className="mt-6 flex items-center gap-2">
-          <Input
-            type="text"
-            placeholder="닉네임을 입력하세요..."
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-          />
-          <Button
-            onClick={handleApply}
-            disabled={post.closed || !nickname.trim()}
-            size="lg"
-          >
-            {post.closed ? "모집이 마감되었습니다" : "지원하기"}
-          </Button>
-        </div>
-      )}
-
-      {/* 모집 마감 & chatRoomId === -1 => 채팅방 생성 중 */}
-      {post.closed && post.chatRoomId === -1 && (
-        <p className="mt-4 text-blue-600 font-semibold">
-          채팅방을 생성하고 있습니다 :)
-        </p>
-      )}
-
-      {/* 채팅방 접근 로직 */}
-      <div className="mt-6 flex flex-col items-center">
-        {post.closed && post.chatRoomId !== -1 && canJoin === "" && (
-          <button
-            onClick={() => {
-              CheckChatRoomAccess();
-            }}
-            className="mt-4 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            멘토링 채팅방이 개설되었습니다
-          </button>
-        )}
-        {canJoin !== "" && (
-          <>
-            {canJoin === "true" ? (
-              <button
-                onClick={handleEnterChat}
-                className="mt-4 w-full py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                채팅방 입장하기
-              </button>
-            ) : canJoin === "false" ? (
-              <p className="mt-4 text-gray-600 font-semibold">
-                멘토링이 진행 중입니다
-              </p>
-            ) : (
-              <p className="mt-4 text-blue-600 font-semibold">
-                채팅방 접근 확인 중...
-              </p>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* 댓글 목록 */}
-      {/* 댓글 목록 */}
-      {post.comments.map((comment) => (
-        <div
-          key={comment.commentId}
-          className="p-3 bg-white rounded-lg shadow mb-2"
-        >
-          <div className="flex justify-between items-center">
-            {comment.editing ? (
-              <Input
-                type="text"
-                value={comment.editedText}
-                onChange={(e) =>
-                  handleCommentChange(comment.commentId, e.target.value)
-                }
-              />
-            ) : (
-              <p className="text-sm text-gray-800">{comment.comment}</p>
-            )}
-
-            {comment.owner && (
+            {/* Edit/Delete buttons */}
+            {post.owner && (
               <div className="flex gap-2">
-                {comment.editing ? (
-                  <>
-                    <TextButton
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleSaveComment(comment.commentId)}
-                    >
-                      저장
-                    </TextButton>
-                    <TextButton
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleCancelEdit(comment.commentId)}
-                    >
-                      취소
-                    </TextButton>
-                  </>
-                ) : (
-                  <>
-                    <TextButton
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleEditComment(comment.commentId)}
-                    >
-                      수정
-                    </TextButton>
-                    <TextButton
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleDeleteComment(comment.commentId)}
-                    >
-                      삭제
-                    </TextButton>
-                  </>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    router.push(`/Community/mentee/editPost/${post.postId}`)
+                  }
+                >
+                  수정
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleDeletePost}>
+                  삭제
+                </Button>
               </div>
             )}
           </div>
-          <span className="text-xs text-gray-500">{comment.createdAt}</span>
-        </div>
-      ))}
 
-      {/* 댓글 입력창 */}
-      <div className="mt-4 flex gap-2">
-        <Input
-          type="text"
-          placeholder="댓글을 입력하세요..."
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-        />
-        <Button onClick={handleCommentSubmit} size="lg">
-          등록
-        </Button>
+          {/* Content */}
+          <div className="mt-6 border-t border-gray-100 pt-6">
+            <div className="prose max-w-none">
+              <p className="whitespace-pre-wrap">{post.content}</p>
+            </div>
+          </div>
+
+          {/* Recruitment info */}
+          <div className="mt-8 bg-gray-50 rounded-xl p-5 border border-gray-100">
+            <h2 className="text-lg font-bold mb-3 text-gray-800">모집 정보</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex items-center">
+                <Users size={18} className="text-primary mr-2" />
+                <span className="text-gray-700">
+                  모집 인원:{" "}
+                  <span className="font-medium">{post.capacity}명</span>
+                </span>
+              </div>
+              <div className="flex items-center">
+                <User size={18} className="text-primary mr-2" />
+                <span className="text-gray-700">
+                  현재 지원자:{" "}
+                  <span className="font-medium">
+                    {post.currentApplicants}명
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Apply section */}
+          {!post.owner && (
+            <div className="mt-6">
+              <div className="bg-blue-50 rounded-xl p-5 border border-blue-100">
+                <h3 className="font-medium text-blue-800 mb-3">멘토링 신청</h3>
+                <div className="flex gap-3">
+                  <div className="flex-grow">
+                    <Input
+                      type="text"
+                      placeholder="채팅방에서 사용할 닉네임을 입력하세요"
+                      value={nickname}
+                      onChange={(e) => setNickname(e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    variant="primary"
+                    onClick={handleApply}
+                    disabled={post.closed || !nickname.trim()}
+                  >
+                    {post.closed ? "모집 마감됨" : "지원하기"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Chat information */}
+          {post.closed && post.chatRoomId === -1 && (
+            <div className="mt-4 bg-blue-50 p-4 rounded-xl border border-blue-100 text-blue-700 flex items-center">
+              <MessageCircle size={18} className="mr-2" />
+              <p>채팅방을 생성하고 있습니다</p>
+            </div>
+          )}
+
+          {/* Chat room access */}
+          {post.closed && post.chatRoomId !== -1 && (
+            <div className="mt-6">
+              {canJoin === "" && (
+                <Button
+                  variant="primary"
+                  onClick={CheckChatRoomAccess}
+                  className="w-full"
+                >
+                  멘토링 채팅방이 개설되었습니다
+                </Button>
+              )}
+
+              {canJoin === "true" && (
+                <Button
+                  variant="primary"
+                  onClick={handleEnterChat}
+                  className="w-full"
+                >
+                  채팅방 입장하기
+                </Button>
+              )}
+
+              {canJoin === "false" && (
+                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-gray-700 flex items-center justify-center">
+                  <p className="font-medium">멘토링이 진행 중입니다</p>
+                </div>
+              )}
+
+              {canJoin === "checking" && (
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-blue-700 flex items-center justify-center">
+                  <p className="font-medium">채팅방 접근 확인 중...</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Comments section */}
+          <div className="mt-8 border-t border-gray-100 pt-6">
+            <h2 className="flex items-center text-lg font-bold mb-4 text-gray-800">
+              <MessageCircle size={18} className="mr-2" />
+              댓글 ({post.comments.length})
+            </h2>
+
+            {/* Comment list */}
+            <div className="space-y-4 mb-6">
+              {post.comments.length > 0 ? (
+                post.comments.map((comment) => (
+                  <div
+                    key={comment.commentId}
+                    className="bg-gray-50 rounded-xl p-4 border border-gray-100"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      {comment.editing ? (
+                        <Input
+                          type="text"
+                          value={comment.editedText}
+                          onChange={(e) =>
+                            handleCommentChange(
+                              comment.commentId,
+                              e.target.value
+                            )
+                          }
+                          className="flex-1"
+                        />
+                      ) : (
+                        <p className="text-gray-800">{comment.comment}</p>
+                      )}
+
+                      {/* Comment actions */}
+                      {comment.owner && (
+                        <div className="flex gap-2 ml-3">
+                          {comment.editing ? (
+                            <>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() =>
+                                  handleSaveComment(comment.commentId)
+                                }
+                              >
+                                저장
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleCancelEdit(comment.commentId)
+                                }
+                              >
+                                취소
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleEditComment(comment.commentId)
+                                }
+                              >
+                                수정
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  handleDeleteComment(comment.commentId)
+                                }
+                              >
+                                삭제
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {comment.createdAt}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="bg-gray-50 rounded-xl p-6 text-center text-gray-500">
+                  첫 댓글을 남겨보세요!
+                </div>
+              )}
+            </div>
+
+            {/* Comment input */}
+            <div className="flex gap-3">
+              <div className="flex-grow">
+                <Input
+                  type="text"
+                  placeholder="댓글을 입력하세요..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                />
+              </div>
+              <Button
+                variant="primary"
+                onClick={handleCommentSubmit}
+                disabled={!newComment.trim()}
+              >
+                등록
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

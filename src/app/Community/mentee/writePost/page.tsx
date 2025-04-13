@@ -81,79 +81,130 @@ const WriteMenteePost = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto my-10 p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold mb-6">멘티 게시글 작성</h1>
+    <div className="w-full max-w-[95%] mx-auto py-4 px-2">
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        {/* 헤더 영역 */}
+        <div className="bg-gradient-to-r from-secondary to-primary p-6">
+          <h1 className="text-2xl md:text-3xl font-bold text-white">
+            멘티 게시글 작성
+          </h1>
+          <p className="text-white/80 mt-2">
+            멘토를 찾고 도움을 요청하는 게시글을 작성해보세요
+          </p>
+        </div>
 
-      {/* 제목 입력 */}
-      <div className="mb-4">
-        <label className="block text-lg font-medium mb-2">제목</label>
-        <Input
-          type="text"
-          placeholder="게시글 제목을 입력하세요"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </div>
+        {/* 콘텐츠 영역 */}
+        <div className="p-4 md:p-6 space-y-5">
+          {/* 제목 입력 */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">제목</label>
+            <Input
+              type="text"
+              placeholder="게시글 제목을 입력하세요"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
 
-      {/* 태그 선택 */}
-      {/* 태그 선택 */}
-      <div className="mb-4">
-        <label className="block text-lg font-medium mb-2">게시글 태그</label>
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <TagButton
-              key={tag.id}
-              selected={selectedTags.includes(tag.id)}
-              onClick={() => handleTagSelection(tag.id)}
-            >
-              {tag.name}
-            </TagButton>
-          ))}
+          {/* 태그 선택 */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              게시글 태그
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <TagButton
+                  key={tag.id}
+                  selected={selectedTags.includes(tag.id)}
+                  onClick={() => handleTagSelection(tag.id)}
+                >
+                  {tag.name}
+                </TagButton>
+              ))}
+            </div>
+          </div>
+
+          {/* 본문 입력 */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">본문</label>
+            <div className="rounded-xl border border-neutral-200 overflow-hidden focus-within:ring-2 focus-within:ring-primary">
+              <textarea
+                placeholder="멘토들에게 전달할 내용을 입력하세요"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="w-full p-4 h-40 focus:outline-none resize-none"
+              ></textarea>
+            </div>
+          </div>
+
+          {/* 게시글 유형 선택 */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              게시글 유형 선택
+            </label>
+            <div className="flex gap-4 items-center">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className="relative">
+                  <input
+                    type="radio"
+                    value="PUBLIC"
+                    checked={chatRoomType === "PUBLIC"}
+                    onChange={() => setChatRoomType("PUBLIC")}
+                    className="sr-only"
+                  />
+                  <div
+                    className={`w-5 h-5 rounded-full border ${
+                      chatRoomType === "PUBLIC"
+                        ? "border-secondary"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {chatRoomType === "PUBLIC" && (
+                      <div className="w-3 h-3 bg-secondary rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                    )}
+                  </div>
+                </div>
+                <span>공개용 채팅방</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <div className="relative">
+                  <input
+                    type="radio"
+                    value="PRIVATE"
+                    checked={chatRoomType === "PRIVATE"}
+                    onChange={() => setChatRoomType("PRIVATE")}
+                    className="sr-only"
+                  />
+                  <div
+                    className={`w-5 h-5 rounded-full border ${
+                      chatRoomType === "PRIVATE"
+                        ? "border-secondary"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    {chatRoomType === "PRIVATE" && (
+                      <div className="w-3 h-3 bg-secondary rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                    )}
+                  </div>
+                </div>
+                <span>비공개용 채팅방</span>
+              </label>
+            </div>
+          </div>
+
+          {/* 등록 버튼 */}
+          <div className="flex justify-end pt-4">
+            <div className="flex gap-3">
+              <Button onClick={() => router.back()} variant="primary" size="md">
+                취소
+              </Button>
+              <Button onClick={handleSubmit} variant="secondary" size="md">
+                게시글 등록
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* 본문 입력 */}
-      <div className="mb-4">
-        <label className="block text-lg font-medium mb-2">본문</label>
-        <textarea
-          placeholder="멘토들에게 전달할 내용을 입력하세요"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="w-full p-3 border rounded-md h-40 focus:ring-2 focus:ring-blue-500"
-        ></textarea>
-      </div>
-
-      {/* 게시글 유형 선택 */}
-      <div className="mb-6">
-        <label className="block text-lg font-medium mb-2">
-          게시글 유형 선택
-        </label>
-        <div className="flex gap-4">
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              value="PUBLIC"
-              checked={chatRoomType === "PUBLIC"}
-              onChange={() => setChatRoomType("PUBLIC")}
-            />
-            공개용 채팅방
-          </label>
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              value="PRIVATE"
-              checked={chatRoomType === "PRIVATE"}
-              onChange={() => setChatRoomType("PRIVATE")}
-            />
-            비공개용 채팅방
-          </label>
-        </div>
-      </div>
-
-      {/* 등록 버튼 */}
-      <Button onClick={handleSubmit} variant="primary">
-        게시글 등록
-      </Button>
     </div>
   );
 };

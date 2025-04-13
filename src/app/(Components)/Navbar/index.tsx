@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Bell, CircleUserRound, Settings } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import Button from "@/app/(Components)/ui/Button"; // 공통 버튼 컴포넌트
 
 // const NAVBAR_HEIGHT = 65; // 고정 높이(px) – tailwind 기준 h-16
@@ -54,8 +55,14 @@ const Navbar = ({ height }: NavbarProps) => {
       <div className="flex h-full w-full  items-center gap-8 px-10 ">
         {/* 좌측 로고 */}
         <div className="pl-10">
-          <Link href="/" className=" text-xl font-bold text-blue-600">
-            홍익멘토
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/logo.png"
+              alt="홍이음 로고"
+              width={120}
+              height={40}
+              className="object-contain"
+            />
           </Link>
         </div>
         {/* 중앙 검색창 */}
